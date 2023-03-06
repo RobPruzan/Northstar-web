@@ -48,13 +48,14 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String     @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?    @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    Document      Document[]
 }
 
 model VerificationToken {
@@ -63,4 +64,25 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Document {
+    id           String        @id @default(cuid())
+    title        String
+    text         String
+    source       String
+    userId       String
+    sourceUser   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    DocumentInfo DocumentInfo?
+}
+
+model DocumentInfo {
+    documentID String   @unique
+    document   Document @relation(fields: [documentID], references: [id], onDelete: Cascade)
+}
+
+model Collection {
+    id                String @id @default(cuid())
+    averageDifficulty Int
+    totalDocuments    Int
 }

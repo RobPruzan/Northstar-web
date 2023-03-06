@@ -23,3 +23,17 @@ export const exampleRouter = createTRPCRouter({
     return "you can now see this secret message!";
   }),
 });
+
+export const userRouter = createTRPCRouter({
+  getAll: publicProcedure.query(({ ctx }) => ctx.prisma.user.findMany()),
+
+  getOne: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(({ ctx, input }) =>
+      ctx.prisma.user.findUnique({
+        where: {
+          id: input.id,
+        },
+      })
+    ),
+});
