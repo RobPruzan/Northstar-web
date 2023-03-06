@@ -23,7 +23,7 @@ const index = () => {
         <div className="flex h-full w-full ">
           <div className="flex h-full w-1/5 flex-col items-center justify-center  border border-l-0 border-t-0 border-slate-700 shadow-2xl"></div>
           <div className="flex h-full w-3/5 flex-col items-center justify-center "></div>
-          <div className="flex   h-full w-1/5  flex-col items-center justify-center overflow-y-scroll  border border-r-0 border-t-0 border-slate-700 px-2 shadow-2xl ">
+          <div className="flex   h-full w-1/5  flex-col items-center overflow-y-scroll  border  border-r-0 border-t-0 border-slate-700 p-2 px-2 shadow-2xl ">
             <CreateModal />
           </div>
         </div>

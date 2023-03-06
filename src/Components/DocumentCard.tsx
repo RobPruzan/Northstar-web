@@ -28,11 +28,13 @@ const DocumentCard = ({
       // dragTransition={{ bounceStiffness: 600, bounceDamping: 10 }}
 
       layout
-      className=" relative mx-2 flex min-h-min w-80 items-center justify-center rounded-sm bg-slate-800 py-1 font-semibold shadow-lg shadow-lg hover:shadow-lg "
+      className=" relative mx-2 flex min-h-min w-80 items-center justify-center rounded-md bg-slate-800 py-1 px-3  font-semibold shadow-lg hover:shadow-lg"
     >
       <div className="flex h-fit w-full flex-col items-center">
         <div className="text-md m-1  flex justify-center">
-          <div className="m-auto text-gray-500">{"Dummy title"}</div>
+          <div className="m-auto text-gray-500">
+            <p className="text-xl font-bold text-slate-400">Dummy Title</p>
+          </div>
           <div>
             <BsX
               color="red"
@@ -49,44 +51,19 @@ const DocumentCard = ({
           </div>
         </div>
         {/*  */}
-        <div className="m-2 h-max w-full min-w-min bg-slate-700 text-center text-sm">
+        <div className="m-2 h-max w-full min-w-min rounded-md bg-slate-700 p-1 text-center text-sm">
           <div className=" flex w-full  justify-evenly text-center text-xs">
-            <div>
-              <p className="">Difficulty</p>
-              <p
-                style={
-                  difficulty
-                    ? {
-                        color: `${COLOR_MAP(difficulty)}`,
-                      }
-                    : undefined
-                }
-              >
-                {difficulty}%
-              </p>
+            <div className="mx-3">
+              <p className="text-slate-400">Difficulty</p>
+              <p className="text-yellow-300">{difficulty}%</p>
             </div>
-            <div className="mx-2">
-              <p className="inline">Diversity</p>
-              <p
-                style={
-                  diversity
-                    ? {
-                        color: `${COLOR_MAP(diversity)}`,
-                      }
-                    : undefined
-                }
-                className={
-                  diversity
-                    ? `text-${COLOR_MAP(diversity)}-500`
-                    : "text-gray-600"
-                }
-              >
-                {diversity}%
-              </p>
+            <div className="mx-3">
+              <p className="inline text-slate-400">Diversity</p>
+              <p className="text-red-500">{diversity}%</p>
             </div>
-            <div className="mx-2">
-              <p>Length</p>
-              <p className="inline text-gray-500">{text_length}</p>
+            <div className="mx-3">
+              <p className="text-slate-400">Length</p>
+              <p className="inline text-green-500">{text_length}</p>
             </div>
           </div>
         </div>
