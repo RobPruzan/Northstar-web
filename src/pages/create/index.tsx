@@ -1,10 +1,15 @@
 // type Props = {};
 
+<<<<<<< HEAD
 import Library from "~/components/ChooseDocument/Library";
 import UserDocuments from "~/components/ChooseDocument/UserDocuments";
 import CreateModal from "~/components/CreateDocument/CreateModal";
 import DocumentCard from "~/components/DocumentCard";
 
+=======
+import CreateModal from "~/components/CreateDocument/CreateModal";
+import DocumentCard from "~/components/DocumentCard";
+>>>>>>> 2dc44ba (Reinitting layout + model transfer)
 import NavBar from "~/components/NavBar";
 
 const index = () => {
