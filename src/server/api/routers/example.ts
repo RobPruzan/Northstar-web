@@ -37,3 +37,7 @@ export const userRouter = createTRPCRouter({
       })
     ),
 });
+
+export const documentRouter = createTRPCRouter({
+  getAll: publicProcedure.query(({ ctx }) => ctx.prisma.document.findMany()),
+});

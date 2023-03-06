@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { z } from "zod";
 import { api } from "~/utils/api";
+=======
+import { motion } from "framer-motion";
+import { useReducer } from "react";
+import { z } from "zod";
+>>>>>>> a26bb37 (Make input collection reducer)
 const dropIn = {
   hidden: {
     opacity: 0,
@@ -92,6 +98,7 @@ const DEFAUTLT_STATE: InputCollectionCreate = {
 };
 
 const ModalBackdrop = ({ handleClose }: ModalBackdropProps) => {
+<<<<<<< HEAD
   const [document, setDocument] = useState<{
     title: string;
     text: string;
@@ -107,11 +114,21 @@ const ModalBackdrop = ({ handleClose }: ModalBackdropProps) => {
       );
     },
   });
+=======
+  const [inputCollection, inputCollectionDispatch] = useReducer(
+    inputCollectionReducer,
+    DEFAUTLT_STATE
+  );
+>>>>>>> a26bb37 (Make input collection reducer)
 
   return (
     <motion.div
       onClick={handleClose}
+<<<<<<< HEAD
       className="backdrop fixed top-0 left-0 z-40 flex  h-screen w-screen items-center justify-center  bg-black bg-opacity-30 "
+=======
+      className="backdrop fixed top-0 left-0 flex  h-screen w-screen items-center justify-center  bg-black bg-opacity-30 "
+>>>>>>> a26bb37 (Make input collection reducer)
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
