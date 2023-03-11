@@ -70,10 +70,11 @@ model Document {
     id           String        @id @default(cuid())
     title        String
     text         String
-    source       String
-    userId       String
-    sourceUser   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId       String?
+    sourceUser   User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
     DocumentInfo DocumentInfo?
+    Collection   Collection?   @relation(fields: [collectionId], references: [id])
+    collectionId String?
 }
 
 model DocumentInfo {
@@ -82,7 +83,9 @@ model DocumentInfo {
 }
 
 model Collection {
-    id                String @id @default(cuid())
-    averageDifficulty Int
+    id                String     @id @default(cuid())
+    averageDifficulty Int?
     totalDocuments    Int
+    name              String
+    Documents         Document[]
 }

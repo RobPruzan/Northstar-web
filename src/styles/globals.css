@@ -6,3 +6,10 @@
     @apply bg-slate-900;
   }
 }
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+::-webkit-scrollbar-track-piece {
+  background-color: #000000;
+}
