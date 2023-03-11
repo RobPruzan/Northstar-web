@@ -57,6 +57,7 @@ const DocumentCard = ({
         </div>
 
         {/*  */}
+
         <div className="m-2 h-max w-full min-w-min rounded-md bg-slate-700 p-1 text-center text-sm">
           <div className=" flex w-full  justify-evenly text-center text-xs">
             <div className="mx-3">
