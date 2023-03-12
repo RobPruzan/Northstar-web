@@ -5,8 +5,9 @@ import { Fragment } from "react";
 import AuthShowcase from "./Auth";
 
 const navigation = [
-  { name: "View", href: "/view", current: false },
   { name: "Create", href: "/create", current: false },
+  { name: "View", href: "/view", current: false },
+
   // { name: "Projects", href: "#", current: false },
   // { name: "Calendar", href: "#", current: false },
 ];

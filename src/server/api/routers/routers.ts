@@ -229,7 +229,7 @@ export const documentRouter = createTRPCRouter({
 //         messages: [
 //           {
 //             content: toolsAnswerPrompt,
-//             role: ChatCompletionRequestMessageRoleEnum.Assistant,
+// role: ChatCompletionRequestMessageRoleEnum.Assistant,
 //           },
 //         ],
 //       });

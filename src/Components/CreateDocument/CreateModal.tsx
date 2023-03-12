@@ -9,7 +9,7 @@ const CreateModal = () => {
   const handleClose = () => setModalOpen(false);
   const handleOpen = () => setModalOpen(true);
   return (
-    <>
+    <div className="mb-5 flex w-full items-center justify-center">
       <motion.button
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.9 }}
@@ -25,7 +25,7 @@ const CreateModal = () => {
           <ModalBackdrop handleClose={handleClose} handleOpen={handleOpen} />
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 };
 

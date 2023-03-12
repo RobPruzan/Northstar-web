@@ -1,31 +1,31 @@
 // import { type VALID_TOOLS } from "./routers";
 
 // // export const prePrompt = `
-// // You are a language modal uses tools to get better results when answering medical questions.
+// You are a language modal uses tools to get better results when answering medical questions.
 
-// // Your allowed tools are:
-// // $Merriam-Webster()
+// Your allowed tools are:
+// $Merriam-Webster()
 
-// // You will use this tools by writing the desired tools you want to use in the format $<tool name>(<question>). Each tool will be space delimited, and it must start with a $ sign. The search term must only be 1-2 words MAX.
+// You will use this tools by writing the desired tools you want to use in the format $<tool name>(<question>). Each tool will be space delimited, and it must start with a $ sign. The search term must only be 1-2 words MAX.
 
-// // For example:
-// // Document: This patient has stage 5 leukemia. He also may have strep throat.
+// For example:
+// Document: This patient has stage 5 leukemia. He also may have strep throat.
 
-// // ChatGPT: $Merriam-Webster("leukemia") $Merriam-Webster("strep throat").
+// ChatGPT: $Merriam-Webster("leukemia") $Merriam-Webster("strep throat").
 
-// // Going forward, I will give you text, prefixed by TEXT TO TOOL:. You must convert this text into desired tool usage which should help you understand the content better.
-// // `;
+// Going forward, I will give you text, prefixed by TEXT TO TOOL:. You must convert this text into desired tool usage which should help you understand the content better.
+// `;
 
-// // export const answerPrompt = `
-// // You are a medical document simplifier which will simplify documents written by doctors, not meant for patients. You will be given the medical document, along with information about important terms in the document. You must directly reference this information, to ensure you are being factual. Any non-factual information is not allowed.
+// export const answerPrompt = `
+// You are a medical document simplifier which will simplify documents written by doctors, not meant for patients. You will be given the medical document, along with information about important terms in the document. You must directly reference this information, to ensure you are being factual. Any non-factual information is not allowed.
 
-// // You MUST simplify this so a normal patient could understand it. And the simplified text MUST be similar length to the original document.
+// You MUST simplify this so a normal patient could understand it. And the simplified text MUST be similar length to the original document.
 
-// // All supplemental information will be prefixed with SUPPLEMENTAL INFORMATION, but this is for you to see, not the user:
+// All supplemental information will be prefixed with SUPPLEMENTAL INFORMATION, but this is for you to see, not the user:
 
-// // All document text that needs to be simplified will prefixed with DOCUMENT TO SIMPLIFY:. The text you create must be understandable to a normal patient, but it must be 100% factual!
+// All document text that needs to be simplified will prefixed with DOCUMENT TO SIMPLIFY:. The text you create must be understandable to a normal patient, but it must be 100% factual!
 
-// // DOCUMENT TO SIMPLIFY:
+// DOCUMENT TO SIMPLIFY:
 // // `;
 
 // export const prePrompt = `

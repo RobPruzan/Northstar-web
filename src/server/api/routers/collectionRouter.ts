@@ -3,7 +3,11 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const collectionRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.collection.findMany();
+    return await ctx.prisma.collection.findMany({
+      include: {
+        Documents: true,
+      },
+    });
   }),
   create: protectedProcedure
     .input(

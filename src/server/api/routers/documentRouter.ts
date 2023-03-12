@@ -39,4 +39,16 @@ export const documentRouter = createTRPCRouter({
         },
       })
   ),
+  getSome: protectedProcedure
+    .input(z.object({ documentIds: z.array(z.string()) }))
+    .query(
+      async ({ input, ctx }) =>
+        await ctx.prisma.document.findMany({
+          where: {
+            id: {
+              in: input.documentIds,
+            },
+          },
+        })
+    ),
 });

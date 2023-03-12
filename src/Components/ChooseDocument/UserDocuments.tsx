@@ -1,8 +1,28 @@
+import { type Document } from "@prisma/client";
+import { motion } from "framer-motion";
+import { type Dispatch, type SetStateAction } from "react";
 import { BsX } from "react-icons/bs";
 import { api } from "~/utils/api";
 import useDeleteDocument from "../hooks/useDeleteDocument";
 
-const UserDocuments = () => {
+export const setSelectedDocumentsUniquely = (
+  setSelectedDocuments: Dispatch<SetStateAction<Document[]>>,
+  document: Document
+) => {
+  setSelectedDocuments((prev) => {
+    const selectedIds = prev.map((doc) => doc.id);
+    if (selectedIds.includes(document.id)) {
+      return prev;
+    } else {
+      return [...prev, document];
+    }
+  });
+};
+
+export type Props = {
+  setSelectedDocuments: Dispatch<SetStateAction<Document[]>>;
+};
+const UserDocuments = ({ setSelectedDocuments }: Props) => {
   const documentsQuery = api.document.getAllUserDocuments.useQuery();
   const documentMutation = useDeleteDocument();
   return (
@@ -18,7 +38,12 @@ const UserDocuments = () => {
           //   text_length={0}
           //   documentId={document.id}
           // />
-          <div
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 1 }}
+            onClick={() =>
+              setSelectedDocumentsUniquely(setSelectedDocuments, document)
+            }
             key={document.id}
             className="relative mt-5 flex h-24 w-72 flex-col items-center justify-center   rounded-md  border border-slate-500  bg-slate-800 py-1 px-3 font-semibold shadow-lg hover:shadow-lg"
           >
@@ -36,6 +61,16 @@ const UserDocuments = () => {
               className="absolute top-0 right-0  cursor-pointer fill-red-500 hover:scale-110  hover:fill-red-700 "
               fontSize="medium"
             />
+            {/* <BsPlus
+              onClick={() =>
+                setSelectedDocuments((prev) => [...prev, document])
+              }
+              color="green"
+              size={30}
+              className="absolute bottom-0 right-0  cursor-pointer fill-green-500 hover:scale-110  hover:fill-green-700 "
+              fontSize="medium"
+            /> */}
+
             <div className="m-2 h-max w-full min-w-min rounded-md bg-slate-700 p-1 text-center text-sm">
               <div className=" flex w-full  justify-evenly text-center text-xs">
                 <div className="mx-3">
@@ -52,7 +87,7 @@ const UserDocuments = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.button>
         ))
       )}
     </div>

@@ -2,7 +2,14 @@ import { Popover, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Fragment } from "react";
 
-export const PopOver = () => {
+import { type Document } from "@prisma/client";
+export type Props = { documents: Document[] };
+
+export const DocumentsPopOver = ({ documents }: Props) => {
+  console.log("documents", documents);
+  // const documents = api.document.getSome.useQuery({
+  //   documentIds,
+  // });
   return (
     <div className=" w-full max-w-sm px-4">
       <Popover className="relative">
@@ -32,22 +39,11 @@ export const PopOver = () => {
               <Popover.Panel className="absolute left-1/2 z-10 mt-3 w-fit max-w-sm -translate-x-1/2 transform px-4 sm:px-0 lg:max-w-3xl">
                 <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                   <div className="relative grid gap-8 bg-slate-400 p-7 lg:grid-cols-2">
-                    <p>fdsafsdf</p>
-                  </div>
-                  <div className="bg-gray-50 p-4">
-                    <a
-                      href="##"
-                      className="flow-root rounded-md px-2 py-2 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-slate-500 focus-visible:ring-opacity-50"
-                    >
-                      <span className="flex items-center">
-                        <span className="text-sm font-medium text-gray-900">
-                          Documentation
-                        </span>
-                      </span>
-                      <span className="block text-sm text-gray-500">
-                        Start integrating products and tools
-                      </span>
-                    </a>
+                    {documents.map((document) => (
+                      <div key={document.id} className="flex flex-col">
+                        {document.title}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </Popover.Panel>
