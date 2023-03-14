@@ -10,8 +10,10 @@ import {
 } from "chart.js";
 
 import { faker } from "@faker-js/faker";
+import { useContext } from "react";
 import { Line } from "react-chartjs-2";
 import NavBar from "~/components/NavBar";
+import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -54,12 +56,27 @@ export const data = {
     },
   ],
 };
+const SomeComponent = () => {
+  const { selectedDocuments, setSelectedDocuments } = useContext(
+    SelectedDocumentsContext
+  );
+  return (
+    <div>
+      {selectedDocuments.map((doc) => (
+        <div key={doc.id}>
+          <p>{doc.text}</p>
+          <p>{doc.id}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const index = () => {
   return (
     <>
       <NavBar />
-
+      <SomeComponent />
       <Line options={options} data={data} />
     </>
   );

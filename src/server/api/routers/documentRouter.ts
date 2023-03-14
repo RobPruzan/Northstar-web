@@ -37,6 +37,10 @@ export const documentRouter = createTRPCRouter({
         where: {
           userId: ctx.session.user.id,
         },
+        // reverse sort
+        orderBy: {
+          id: "desc",
+        },
       })
   ),
   getSome: protectedProcedure

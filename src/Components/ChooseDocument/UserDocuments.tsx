@@ -41,7 +41,8 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 1 }}
-            onClick={() =>
+            onClick={(event) =>
+              event.target === event.currentTarget &&
               setSelectedDocumentsUniquely(setSelectedDocuments, document)
             }
             key={document.id}
@@ -72,7 +73,12 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
             /> */}
 
             <div className="m-2 h-max w-full min-w-min rounded-md bg-slate-700 p-1 text-center text-sm">
-              <div className=" flex w-full  justify-evenly text-center text-xs">
+              <div
+                onClick={(event) =>
+                  setSelectedDocumentsUniquely(setSelectedDocuments, document)
+                }
+                className=" flex w-full  justify-evenly text-center text-xs"
+              >
                 <div className="mx-3">
                   <p className="text-slate-400">Difficulty</p>
                   <p className="text-yellow-300">{0}%</p>

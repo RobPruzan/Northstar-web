@@ -1,15 +1,17 @@
-import { type Document } from "@prisma/client";
-import { useState } from "react";
+import { useContext } from "react";
 import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import Library from "~/components/ChooseDocument/Library";
 import UserDocuments from "~/components/ChooseDocument/UserDocuments";
 import CreateControlPanel from "~/components/ControlPanel/CreateControlPanel";
 import CreateModal from "~/components/CreateDocument/CreateModal";
 import NavBar from "~/components/NavBar";
+import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 
 const index = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
+  const { selectedDocuments, setSelectedDocuments } = useContext(
+    SelectedDocumentsContext
+  );
   return (
     <div className="flex h-screen w-screen max-w-full flex-col   ">
       <NavBar />
@@ -22,7 +24,7 @@ const index = () => {
           <div className="flex h-full w-2/12 border border-l-0 border-t-0 border-slate-700 shadow-2xl">
             <CreateControlPanel />
           </div>
-          <div className="flex h-full w-7/12 flex-wrap p-3 ">
+          <div className="flex h-full w-7/12 flex-wrap  ">
             <Library setSelectedDocuments={setSelectedDocuments} />
           </div>
           <div className="flex    h-full w-3/12  flex-col items-center overflow-y-scroll  border  border-r-0 border-t-0 border-slate-700 p-2 px-2 shadow-2xl ">

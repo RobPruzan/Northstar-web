@@ -1,9 +1,9 @@
 import { z } from "zod";
-import {
-  ChatCompletionRequestMessageRoleEnum,
-  Configuration,
-  OpenAIApi,
-} from "openai";
+// import {
+//   ChatCompletionRequestMessageRoleEnum,
+//   Configuration,
+//   OpenAIApi,
+// } from "openai";
 
 import {
   createTRPCRouter,
