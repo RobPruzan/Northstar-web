@@ -75,6 +75,8 @@ model Document {
     DocumentInfo DocumentInfo?
     Collection   Collection?   @relation(fields: [collectionId], references: [id])
     collectionId String?
+    difficulty   Int           @default(0)
+    diversity    Int           @default(0)
 }
 
 model DocumentInfo {
