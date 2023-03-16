@@ -6,10 +6,6 @@ import { type Document } from "@prisma/client";
 export type Props = { documents: Document[] };
 
 export const DocumentsPopOver = ({ documents }: Props) => {
-  console.log("documents", documents);
-  // const documents = api.document.getSome.useQuery({
-  //   documentIds,
-  // });
   return (
     <div className=" w-full max-w-sm px-4">
       <Popover className="relative">

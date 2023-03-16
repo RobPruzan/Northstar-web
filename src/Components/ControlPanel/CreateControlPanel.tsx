@@ -32,7 +32,6 @@ const CreateControlPanel = ({
         },
         {
           onSuccess: (data) => {
-            console.log("The incoming data");
             if (data.success) {
               setDifficulties((prev) => [...prev, data.data.difficulty]);
             }

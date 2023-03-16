@@ -80,31 +80,9 @@ export default function CollectionTypeTabs({
             default:
               break;
           }
-
-          // if (value === collectionTypes.user.name) {
-          //   setCollectionTypeToView("user")
-          // } else if (value === collectionTypes.library.name) {
-          //   setCollectionTypeToView("library")
-          console.log("value for tabs is", value);
         }}
       >
         <Tab.List className="m-0 flex space-x-1 rounded-xl border-gray-300 bg-slate-700 p-1">
-          {/* {Object.keys(categories).map((category) => (
-            <Tab
-              key={category}
-              className={({ selected }) =>
-                classNames(
-                  "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-900 transition ease-in-out",
-                  "border-gray-300 ring-white ring-opacity-60 ring-offset-2 ring-offset-slate-400 focus:outline-none focus:ring-2",
-                  selected
-                    ? "bg-white text-gray-200 shadow"
-                    : "text-gray-200 hover:bg-slate-300 hover:text-gray-500"
-                )
-              }
-            >
-              {category}
-            </Tab>
-          ))} */}
           <Tab
             value={collectionTypes.user.id}
             className={({ selected }) =>

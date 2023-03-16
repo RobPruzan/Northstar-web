@@ -23,5 +23,8 @@ const config = {
   images: {
     domains: ["images.unsplash.com", "localhost", "tailwindui.com"],
   },
+  // env:{
+  //   MODEL_ENDPOINT_URL:"http://localhost:8000"
+  // }
 };
 export default config;
