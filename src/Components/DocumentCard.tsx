@@ -1,7 +1,7 @@
-import { type Document } from "@prisma/client";
 import { motion } from "framer-motion";
-import { type Dispatch } from "react";
+import { useContext } from "react";
 import { BsX } from "react-icons/bs";
+import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import useDeleteDocument from "./hooks/useDeleteDocument";
 export const COLOR_MAP = (difficulty: number) => {
   if (difficulty <= 30) {
@@ -14,11 +14,10 @@ export const COLOR_MAP = (difficulty: number) => {
 };
 export type DocumentCardProps = {
   difficulty: number;
-  diversity: number;
+  diversity?: number;
   text_length: number;
   documentId: string;
   isSelection?: boolean;
-  setSelectedDocuments?: Dispatch<React.SetStateAction<Document[]>>;
 };
 const DocumentCard = ({
   text_length,
@@ -26,8 +25,10 @@ const DocumentCard = ({
   diversity,
   documentId,
   isSelection,
-  setSelectedDocuments,
 }: DocumentCardProps) => {
+  const { selectedDocuments, setSelectedDocuments } = useContext(
+    SelectedDocumentsContext
+  );
   // const queryClient = useQueryClient();
   // const documentMutation = api.document.deleteOne.useMutation({
   //   onSuccess: async () => {
