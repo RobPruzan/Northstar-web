@@ -38,13 +38,11 @@ const Pagination = ({
     },
     {
       onSuccess: (data) => {
-        console.log("sucess! data", data);
         handleMovePage(1, data);
       },
       enabled: collectionTypeToView !== undefined,
     }
   );
-  console.log("guh", pagesAvailable);
 
   const handleMovePage = (page: number, totalPages: number) => {
     // we're going to need to do a few calculations
