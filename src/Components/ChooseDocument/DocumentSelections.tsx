@@ -12,9 +12,11 @@ const DocumentSelections = ({
   setSelectedDocuments,
 }: Props) => {
   return (
-    <div className="it can flex h-1/6 w-full items-center overflow-x-scroll border-b border-slate-700 text-center">
+    <div className=" flex h-1/6   items-center overflow-x-scroll border-b border-slate-700 text-center">
       {selectedDocuments.length == 0 ? (
-        <p className="text-xl font-bold text-gray-300">No documents selected</p>
+        <p className=" w-full text-3xl  font-bold text-gray-500">
+          No documents selected
+        </p>
       ) : (
         selectedDocuments.map((document) => (
           <DocumentCard
@@ -28,56 +30,6 @@ const DocumentSelections = ({
           />
         ))
       )}
-
-      {/* 
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      />
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      />
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      />
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      />
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      />
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      />
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      />
-      <DocumentCard
-        text_length={0}
-        difficulty={0}
-        diversity={0}
-        documentId={""}
-      /> */}
     </div>
   );
 };

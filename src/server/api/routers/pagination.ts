@@ -7,6 +7,7 @@ export const paginationRouter = createTRPCRouter({
       z.object({
         page: z.number(),
         limit: z.number(),
+        type: z.string(),
       })
     )
     .query(({ ctx, input }) => {
@@ -16,13 +17,24 @@ export const paginationRouter = createTRPCRouter({
         include: {
           Documents: true,
         },
+        where: {
+          type: input.type,
+        },
       });
     }),
   getTotalPages: protectedProcedure
-    .input(z.object({ pageSize: z.number() }))
+    .input(z.object({ pageSize: z.number(), type: z.string() }))
     .query(async ({ ctx, input }) =>
       Math.max(
-        Math.floor((await ctx.prisma.collection.count()) / input.pageSize),
+        Math.ceil(
+          (await ctx.prisma.collection
+            .findMany({
+              where: {
+                type: input.type,
+              },
+            })
+            .then((res) => res.length)) / input.pageSize
+        ),
         1
       )
     ),

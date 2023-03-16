@@ -1,51 +1,95 @@
 import { Tab } from "@headlessui/react";
-import { useState } from "react";
+import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { z } from "zod";
+import { type CollectionType } from "../ControlPanel/CreateControlPanel";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
+export type CollectionTypeInfo = {
+  [K in CollectionType]: {
+    name: string;
+    description: string;
+    id?: number;
+  };
+};
+const collectionTypes: CollectionTypeInfo = {
+  user: {
+    name: "User",
+    description: "Your own collection of documents",
+    id: 0,
+  },
+  library: {
+    name: "Library",
+    description: "A collection of documents shared by other users",
+    id: 1,
+  },
+};
 
-export default function CollectionTypeTabs() {
-  const [categories] = useState({
-    Northstar: [
-      {
-        id: 1,
-        title: "Does drinking coffee make you smarter?",
-        date: "5h ago",
-        commentCount: 5,
-        shareCount: 2,
-      },
-      {
-        id: 2,
-        title: "So you've bought coffee... now what?",
-        date: "2h ago",
-        commentCount: 3,
-        shareCount: 2,
-      },
-    ],
-    User: [
-      {
-        id: 1,
-        title: "Is tech making coffee better or worse?",
-        date: "Jan 7",
-        commentCount: 29,
-        shareCount: 16,
-      },
-      {
-        id: 2,
-        title: "The most innovative things happening in coffee",
-        date: "Mar 19",
-        commentCount: 24,
-        shareCount: 12,
-      },
-    ],
-  });
+const collectionTypeSchema = z.literal("user").or(z.literal("library"));
 
+export type CollectionTypeTabsProps = {
+  setCollectionTypeToView: Dispatch<
+    SetStateAction<"user" | "library" | undefined>
+  >;
+  collectionTypeToView: "user" | "library" | undefined;
+};
+
+export default function CollectionTypeTabs({
+  collectionTypeToView,
+  setCollectionTypeToView,
+}: CollectionTypeTabsProps) {
+  const getCollectionTypeFromStorage = () => {
+    return localStorage.getItem("collectionType");
+  };
+
+  const setCollectionToStorage = (collectionType: CollectionType) => {
+    localStorage.setItem("collectionType", collectionType);
+  };
+  useEffect(() => {
+    const collectionType = getCollectionTypeFromStorage();
+    const collectionTypeValidation =
+      collectionTypeSchema.safeParse(collectionType);
+
+    if (collectionTypeValidation.success) {
+      setCollectionTypeToView(collectionTypeValidation.data);
+    }
+  }, []);
   return (
     <div className="mt-3 w-full max-w-md px-2 sm:px-0">
-      <Tab.Group>
+      <Tab.Group
+        selectedIndex={
+          collectionTypeToView != undefined
+            ? collectionTypeToView === "user"
+              ? 0
+              : 1
+            : -1
+        }
+        // selectedIndex={collectionTypeToView === "user" ? 0 : 1}
+        onChange={(value) => {
+          switch (value) {
+            case collectionTypes.user.id:
+              setCollectionTypeToView("user");
+              setCollectionToStorage("user");
+              break;
+
+            case collectionTypes.library.id:
+              setCollectionTypeToView("library");
+              setCollectionToStorage("library");
+              break;
+            default:
+              break;
+          }
+
+          // if (value === collectionTypes.user.name) {
+          //   setCollectionTypeToView("user")
+          // } else if (value === collectionTypes.library.name) {
+          //   setCollectionTypeToView("library")
+          console.log("value for tabs is", value);
+        }}
+      >
         <Tab.List className="m-0 flex space-x-1 rounded-xl border-gray-300 bg-slate-700 p-1">
-          {Object.keys(categories).map((category) => (
+          {/* {Object.keys(categories).map((category) => (
             <Tab
               key={category}
               className={({ selected }) =>
@@ -60,9 +104,37 @@ export default function CollectionTypeTabs() {
             >
               {category}
             </Tab>
-          ))}
+          ))} */}
+          <Tab
+            value={collectionTypes.user.id}
+            className={({ selected }) =>
+              classNames(
+                "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-900 transition ease-in-out",
+                "border-gray-300 ring-white ring-opacity-60 ring-offset-2 ring-offset-slate-400 focus:outline-none focus:ring-2",
+                selected
+                  ? "bg-white text-gray-200 shadow"
+                  : "text-gray-200 hover:bg-slate-300 hover:text-gray-500"
+              )
+            }
+          >
+            {collectionTypes.user.name}
+          </Tab>
+          <Tab
+            value={collectionTypes.library.id}
+            className={({ selected }) =>
+              classNames(
+                "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-900 transition ease-in-out",
+                "border-gray-300 ring-white ring-opacity-60 ring-offset-2 ring-offset-slate-400 focus:outline-none focus:ring-2",
+                selected
+                  ? "bg-white text-gray-200 shadow"
+                  : "text-gray-200 hover:bg-slate-300 hover:text-gray-500"
+              )
+            }
+          >
+            {collectionTypes.library.name}
+          </Tab>
         </Tab.List>
-        <Tab.Panels className=""></Tab.Panels>
+        {/* <Tab.Panels className=""></Tab.Panels> */}
       </Tab.Group>
     </div>
   );

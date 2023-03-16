@@ -1,13 +1,24 @@
-import { type Document } from "@prisma/client";
 import Link from "next/link";
-import { useContext, useState } from "react";
+import {
+  useContext,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import CollectionTypeTabs from "../ChooseDocument/CollectionTypeTabs";
 import { useGetDifficultyScore } from "../modelConnection";
+export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
-  selectedDocuments: Document[];
+  setCollectionTypeToView: Dispatch<
+    SetStateAction<"user" | "library" | undefined>
+  >;
+  collectionTypeToView: "user" | "library" | undefined;
 };
-const CreateControlPanel = () => {
+const CreateControlPanel = ({
+  collectionTypeToView,
+  setCollectionTypeToView,
+}: CreateControlPanelProps) => {
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
@@ -36,7 +47,10 @@ const CreateControlPanel = () => {
   return (
     <div className="flex h-full w-full flex-col">
       <div className=" flex h-full w-full flex-col items-center p-2 ">
-        <CollectionTypeTabs />
+        <CollectionTypeTabs
+          collectionTypeToView={collectionTypeToView}
+          setCollectionTypeToView={setCollectionTypeToView}
+        />
         {/* <CollectionComboBox /> */}
         {difficulties.map((difficulty) => (
           <p key={difficulty} className="text-xl font-bold text-gray-300">

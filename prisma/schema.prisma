@@ -88,4 +88,5 @@ model Collection {
     totalDocuments    Int
     name              String
     Documents         Document[]
+    type              String     @default("library")
 }

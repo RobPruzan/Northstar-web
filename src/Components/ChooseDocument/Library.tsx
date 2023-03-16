@@ -1,24 +1,31 @@
-import { type Document } from "@prisma/client";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { api } from "~/utils/api";
 import { DocumentsPopOver } from "../DocumentsPopOver";
 import Pagination from "./Pagination/Pagination";
-export type Props = {
-  setSelectedDocuments: Dispatch<SetStateAction<Document[]>>;
+export type LibraryProps = {
+  setCollectionTypeToView: Dispatch<
+    SetStateAction<"user" | "library" | undefined>
+  >;
+  collectionTypeToView: "user" | "library" | undefined;
 };
 
-export const PAGINATION_PAGE_SIZE = 10;
-const Library = ({ setSelectedDocuments }: Props) => {
+export const PAGINATION_PAGE_SIZE = 9;
+const Library = ({
+  collectionTypeToView,
+  setCollectionTypeToView,
+}: LibraryProps) => {
   const [enabled, setEnabled] = useState(false);
-  const collectionQuery = api.collection.getAll.useQuery();
+  // const collectionQuery = api.collection.getAll.useQuery();
   const [currentPage, setCurrentPage] = useState(1);
+
   const paginationQuery = api.pagination.getContent.useQuery(
     {
       limit: PAGINATION_PAGE_SIZE,
       page: currentPage,
+      type: collectionTypeToView ?? "library",
     },
     {
-      enabled: currentPage > 0,
+      enabled: currentPage > 0 && collectionTypeToView !== undefined,
     }
   );
   console.log("cp", currentPage);
@@ -52,7 +59,11 @@ const Library = ({ setSelectedDocuments }: Props) => {
         {/* ))} */}
       </div>
       <div className="float-right flex w-full items-end justify-end">
-        <Pagination setCurrentPage={setCurrentPage} currentPage={currentPage} />
+        <Pagination
+          collectionTypeToView={collectionTypeToView}
+          setCurrentPage={setCurrentPage}
+          currentPage={currentPage}
+        />
       </div>
     </>
   );

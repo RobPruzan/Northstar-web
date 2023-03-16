@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import Library from "~/components/ChooseDocument/Library";
 import UserDocuments from "~/components/ChooseDocument/UserDocuments";
@@ -12,8 +12,12 @@ const index = () => {
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [collectionTypeToView, setCollectionTypeToView] = useState<
+    "user" | "library"
+  >();
   return (
-    <div className="flex h-screen w-screen max-w-full flex-col   ">
+    <div className="flex h-screen w-screen flex-col   ">
       <NavBar />
       {/* <div className="flex h-full  flex-col items-center justify-center  overflow-hidden"> */}
       <DocumentSelections
@@ -22,11 +26,17 @@ const index = () => {
       />
       <div className="flex h-4/5 w-full ">
         <div className="flex h-full w-2/12 border border-l-0 border-t-0 border-slate-700 shadow-2xl">
-          <CreateControlPanel />
+          <CreateControlPanel
+            setCollectionTypeToView={setCollectionTypeToView}
+            collectionTypeToView={collectionTypeToView}
+          />
         </div>
 
         <div className="flex h-full w-7/12 flex-wrap  ">
-          <Library setSelectedDocuments={setSelectedDocuments} />
+          <Library
+            collectionTypeToView={collectionTypeToView}
+            setCollectionTypeToView={setCollectionTypeToView}
+          />
         </div>
         <div className="flex    h-full w-3/12  flex-col items-center overflow-y-scroll  border  border-r-0 border-t-0 border-slate-700 p-2 px-2 shadow-2xl ">
           {/* <section > */}
