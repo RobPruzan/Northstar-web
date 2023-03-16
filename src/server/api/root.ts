@@ -2,6 +2,7 @@ import { createTRPCRouter } from "~/server/api/trpc";
 import { exampleRouter, userRouter } from "~/server/api/routers/example";
 import { documentRouter } from "./routers/documentRouter";
 import { collectionRouter } from "./routers/collectionRouter";
+import { paginationRouter } from "./routers/pagination";
 
 /**
  * This is the primary router for your server.
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   document: documentRouter,
   collection: collectionRouter,
+  pagination: paginationRouter,
 });
 
 // export type definition of API

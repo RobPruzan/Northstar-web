@@ -42,7 +42,7 @@ export default function CollectionTypeTabs() {
   });
 
   return (
-    <div className="w-full max-w-md px-2 py-16 sm:px-0">
+    <div className="mt-3 w-full max-w-md px-2 sm:px-0">
       <Tab.Group>
         <Tab.List className="m-0 flex space-x-1 rounded-xl border-gray-300 bg-slate-700 p-1">
           {Object.keys(categories).map((category) => (
