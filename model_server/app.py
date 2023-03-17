@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
+from main import reading_difficulty
+
 app = Flask(__name__)
 CORS(
     app,
@@ -26,9 +28,12 @@ def get_difficulty():
     # result = predict_difficulty(model, request.json)
 
     # For now, we'll return a dummy response
-    data = request.json
-    print(data)
-    response = {"difficulty": "easy", "confidence": 0.95}
+    text = request.json.get("excerpt")
+    if text == None:
+        return jsonify({"error": "No text found"}), 400
+    # print(text)
+    response = {"difficulty": reading_difficulty(text)}
+    print(response)
 
     return jsonify(response)
 

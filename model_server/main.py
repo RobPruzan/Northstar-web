@@ -37,15 +37,15 @@ from transformers import (
 # from ...api import pytorchBERTmodel
 # ---------------- uncomment went done
 
-nltk.download("wordnet")
+# nltk.download("wordnet")
 
-nltk.download("omw-1.4")
+# nltk.download("omw-1.4")
 
-nltk.download("cmudict")
+# nltk.download("cmudict")
 
-nltk.download("stopwords")
+# nltk.download("stopwords")
 
-nltk.download("punkt")
+# nltk.download("punkt")
 
 glove_vectors = api.load("glove-wiki-gigaword-100")
 
@@ -56,14 +56,15 @@ device = torch.device("cuda" if torch.cuda.is_available else "cpu")
 # loading model
 # PATH = "./pytorchBERTmodel"
 # PATH = "../ml_models/pytorchBERTmodel"
-model = torch.load("ml_models/pytorchBERTmodel", map_location=torch.device("cpu"))
+model = torch.load("pytorchBERTmodel", map_location=torch.device("cpu"))
 model.eval()
 
 model.to("cpu")
 
-p = pipeline("automatic-speech-recognition")
+# p = pipeline("automatic-speech-recognition")
+p = {}
 
-with open("datasets/balanced_synonym_data.json") as f:
+with open("balanced_synonym_data.json") as f:
     data = json.loads(f.read())
 
 
