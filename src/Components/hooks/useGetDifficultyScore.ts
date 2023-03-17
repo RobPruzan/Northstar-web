@@ -7,7 +7,7 @@ export const difficultSchema = z.object({
 export type Difficulty = z.infer<typeof difficultSchema>;
 export const useGetDifficultyScore = () => {
   const url = process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL
-    ? `${process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL}/api/difficulty`
+    ? `${process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL}/difficulty`
     : "";
   const difficultyMutation = useMutation(async ({ text }: { text: string }) => {
     console.log("BEING CLALLEDFDS", url);
