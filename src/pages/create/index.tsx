@@ -17,14 +17,14 @@ const index = () => {
     "user" | "library"
   >();
   return (
-    <div className="flex h-screen w-screen flex-col   ">
+    <div className="flex h-screen w-screen flex-col overflow-hidden ">
       <NavBar />
       {/* <div className="flex h-full  flex-col items-center justify-center  overflow-hidden"> */}
       <DocumentSelections
         selectedDocuments={selectedDocuments}
         setSelectedDocuments={setSelectedDocuments}
       />
-      <div className="flex h-4/5 w-full ">
+      <div className="flex h-4/5 w-full overflow-hidden">
         <div className="flex h-full w-2/12 border border-l-0 border-t-0 border-slate-700 shadow-2xl">
           <CreateControlPanel
             setCollectionTypeToView={setCollectionTypeToView}
