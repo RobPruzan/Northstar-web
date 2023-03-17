@@ -1,19 +1,20 @@
 import Link from "next/link";
-import {
-  useContext,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { useContext, type Dispatch, type SetStateAction } from "react";
+import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import CollectionTypeTabs from "../ChooseDocument/CollectionTypeTabs";
-import { useGetDifficultyScore } from "../hooks/useGetDifficultyScore";
+import {
+  difficultSchema,
+  useGetDifficultyScore,
+} from "../hooks/useGetDifficultyScore";
 export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
   setCollectionTypeToView: Dispatch<
     SetStateAction<"user" | "library" | undefined>
   >;
   collectionTypeToView: "user" | "library" | undefined;
+  setDifficulties: Dispatch<SetStateAction<number[]>>;
+  difficulties: number[];
 };
 const CreateControlPanel = ({
   collectionTypeToView,
@@ -22,23 +23,34 @@ const CreateControlPanel = ({
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
-  const [difficulties, setDifficulties] = useState<number[]>([]);
+  const { difficulties, setDifficulties } = useContext(DifficultiesContext);
+
   const difficultyMutation = useGetDifficultyScore();
   const handleCompare = () => {
-    selectedDocuments.forEach((doc) => {
-      difficultyMutation.mutate(
-        {
+    // selectedDocuments.forEach(async (doc) => {
+    //   console.log("the doc", doc);
+    //   const data = await difficultyMutation.mutateAsync(
+    //   {
+    //     text: doc.text,
+    //   }
+    //   );
+    // });
+    for (const doc of selectedDocuments) {
+      console.log("hello??s");
+      difficultyMutation
+        .mutateAsync({
           text: doc.text,
-        },
-        {
-          onSuccess: (data) => {
-            if (data.success) {
-              setDifficulties((prev) => [...prev, data.data.difficulty]);
-            }
-          },
-        }
-      );
-    });
+        })
+        .then((data) => {
+          console.log("fodsaif");
+          const validatedData = difficultSchema.safeParse(data);
+          if (validatedData.success) {
+            setDifficulties((prev) => [...prev, validatedData.data.difficulty]);
+          }
+          console.log("the data", data);
+        })
+        .catch((err) => console.log("err", err));
+    }
     // difficultyMutation.mutate({
     //   text
     // })
@@ -57,11 +69,14 @@ const CreateControlPanel = ({
           </p>
         ))}
       </div>
-      <Link href={"/view"} className="m-auto mb-5">
-        <button
-          onClick={handleCompare}
-          className=" mt-64 h-fit w-fit rounded border border-slate-400 bg-slate-700 py-2 px-4 font-bold text-white transition ease-out hover:scale-105 hover:bg-slate-800"
-        >
+      <Link
+        onClick={() => {
+          handleCompare();
+        }}
+        href={"/view"}
+        className="m-auto mb-5"
+      >
+        <button className=" mt-64 h-fit w-fit rounded border border-slate-400 bg-slate-700 py-2 px-4 font-bold text-white transition ease-out hover:scale-105 hover:bg-slate-800">
           Compare
         </button>
       </Link>

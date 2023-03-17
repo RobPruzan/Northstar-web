@@ -18,9 +18,9 @@ export const useGetDifficultyScore = () => {
       },
       body: JSON.stringify({ excerpt: text }),
     });
-    console.log(url);
+    // console.log("wo hoo", url, test.json());
 
-    return difficultSchema.safeParse(await test.json());
+    return test.json();
   });
   return difficultyMutation;
 };

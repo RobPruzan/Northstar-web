@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
 from main import reading_difficulty
+from model_server.main import sliding_window
 
 app = Flask(__name__)
 CORS(
@@ -35,6 +36,15 @@ def get_difficulty():
     response = {"difficulty": reading_difficulty(text)}
     print(response)
 
+    return jsonify(response)
+
+
+@app.route("/api/window_difficulty", methods=["POST"])
+def get_sliding_window_difficulty():
+    text = request.json.get("excerpt")
+    if text == None:
+        return jsonify({"error": "No text found"}), 400
+    response = sliding_window(text)
     return jsonify(response)
 
 
