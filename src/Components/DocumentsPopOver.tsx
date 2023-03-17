@@ -19,9 +19,16 @@ export const DocumentsPopOver = ({ documents }: Props) => {
         {({ open }) => (
           <>
             <Popover.Button
+              disabled={documents.length === 0}
               className={`
+         
                 ${open ? "" : "text-opacity-90"}
-                group float-right inline-flex w-fit items-center rounded-md bg-slate-800 p-3  text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
+                ${
+                  documents.length === 0
+                    ? "bg-slate-500"
+                    : " bg-slate-800 transition  hover:scale-105"
+                }
+                group float-right inline-flex min-w-fit items-center rounded-md p-3  text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
             >
               {/* <BsChevronBarDown /> */}
               <BsChevronBarDown
@@ -40,9 +47,9 @@ export const DocumentsPopOver = ({ documents }: Props) => {
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-1"
             >
-              <Popover.Panel className="absolute left-1/2 z-10 mt-3 w-56 max-w-sm -translate-x-1/2 transform border border-gray-200 px-4 sm:px-0">
+              <Popover.Panel className="absolute left-1/2 z-10 mt-3 w-56 max-w-sm -translate-x-1/2 transform  px-4 sm:px-0">
                 <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                  <div className="relative grid h-44 gap-8 bg-slate-500 p-7">
+                  <div className="relative grid h-96 w-fit gap-8 overflow-y-scroll border border-slate-400 bg-slate-500 p-7">
                     {documents.map((document) => (
                       <div key={document.id} className="flex flex-col">
                         <motion.button
