@@ -6,6 +6,7 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 
 import { useState } from "react";
+import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { StatsContext, type Stats } from "~/Context/StatsContext";
 import "~/styles/globals.css";
@@ -18,17 +19,20 @@ const MyApp: AppType<{ session: Session | null }> = ({
   const [stats, setStats] = useState<Stats>({
     difficulty: [],
   });
+  const [difficulties, setDifficulties] = useState<number[]>([]);
 
   return (
-    <StatsContext.Provider value={{ stats, setStats }}>
-      <SelectedDocumentsContext.Provider
-        value={{ selectedDocuments, setSelectedDocuments }}
-      >
-        <SessionProvider session={session}>
-          <Component {...pageProps} />
-        </SessionProvider>
-      </SelectedDocumentsContext.Provider>
-    </StatsContext.Provider>
+    <DifficultiesContext.Provider value={{ difficulties, setDifficulties }}>
+      <StatsContext.Provider value={{ stats, setStats }}>
+        <SelectedDocumentsContext.Provider
+          value={{ selectedDocuments, setSelectedDocuments }}
+        >
+          <SessionProvider session={session}>
+            <Component {...pageProps} />
+          </SessionProvider>
+        </SelectedDocumentsContext.Provider>
+      </StatsContext.Provider>
+    </DifficultiesContext.Provider>
   );
 };
 

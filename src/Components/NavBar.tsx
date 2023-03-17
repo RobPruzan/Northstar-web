@@ -1,22 +1,24 @@
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import AuthShowcase from "./Auth";
 
-const navigation = [
-  { name: "Create", href: "/create", current: false },
-  { name: "View", href: "/view", current: false },
+const DEFAULT_NAVIGATION = [
+  { name: "Create", href: "/create" },
+  { name: "View", href: "/view" },
 
   // { name: "Projects", href: "#", current: false },
   // { name: "Calendar", href: "#", current: false },
-];
+] as const;
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function NavBar() {
+  const [navigation, setNavigation] = useState(DEFAULT_NAVIGATION);
+  const [current, setCurrent] = useState<string | null>(null);
   return (
     <Disclosure
       as="nav"
@@ -51,13 +53,16 @@ export default function NavBar() {
                       <Link
                         key={item.name}
                         href={item.href}
+                        onClick={() => setCurrent(item.name)}
                         className={classNames(
-                          item.current
+                          current === item.name
                             ? "bg-gray-900 text-white"
                             : "text-gray-300 hover:bg-gray-700 hover:text-white",
                           "text-md rounded-md px-5 py-2 font-medium"
                         )}
-                        aria-current={item.current ? "page" : undefined}
+                        aria-current={
+                          item.name === current ? "page" : undefined
+                        }
                       >
                         {item.name}
                       </Link>
@@ -133,12 +138,12 @@ export default function NavBar() {
                   as="a"
                   href={item.href}
                   className={classNames(
-                    item.current
+                    item.name === current
                       ? "mx-0 bg-gray-900 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white ",
                     " block rounded-md px-3 py-2 text-base font-medium"
                   )}
-                  aria-current={item.current ? "page" : undefined}
+                  aria-current={item.name === current ? "page" : undefined}
                 >
                   {item.name}
                 </Disclosure.Button>
