@@ -7,7 +7,7 @@ import {
 } from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import CollectionTypeTabs from "../ChooseDocument/CollectionTypeTabs";
-import { useGetDifficultyScore } from "../modelConnection";
+import { useGetDifficultyScore } from "../hooks/useGetDifficultyScore";
 export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
   setCollectionTypeToView: Dispatch<

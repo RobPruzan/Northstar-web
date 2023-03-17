@@ -48,7 +48,13 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
             key={document.id}
             className="relative mt-5 flex h-24 w-72 flex-col items-center justify-center   rounded-md  border border-slate-500  bg-slate-800 py-1 px-3 font-semibold shadow-lg hover:shadow-lg"
           >
-            <p className="text-2xl font-semibold text-slate-400">
+            <p
+              onClick={(event) =>
+                event.target === event.currentTarget &&
+                setSelectedDocumentsUniquely(setSelectedDocuments, document)
+              }
+              className="text-2xl font-semibold text-slate-400"
+            >
               {document.title}
             </p>
             <BsX

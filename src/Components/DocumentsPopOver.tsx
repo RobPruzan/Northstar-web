@@ -71,12 +71,7 @@ export const DocumentsPopOver = ({ documents }: Props) => {
                 }}
                 whileTap={{ scale: 1 }}
               >
-                <DocumentCard
-                  difficulty={document.difficulty}
-                  // diversity={document.diversity}
-                  text_length={document.text.length}
-                  documentId={document.id}
-                />
+                <DocumentCard document={document} />
               </motion.button>
             </div>
           ))}

@@ -1,3 +1,4 @@
+import { type Document } from "@prisma/client";
 import { motion } from "framer-motion";
 import { useContext } from "react";
 import { BsX } from "react-icons/bs";
@@ -13,19 +14,10 @@ export const COLOR_MAP = (difficulty: number) => {
   }
 };
 export type DocumentCardProps = {
-  difficulty: number;
-  diversity?: number;
-  text_length: number;
-  documentId: string;
+  document: Document;
   isSelection?: boolean;
 };
-const DocumentCard = ({
-  text_length,
-  difficulty,
-  diversity,
-  documentId,
-  isSelection,
-}: DocumentCardProps) => {
+const DocumentCard = ({ document, isSelection }: DocumentCardProps) => {
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
@@ -46,7 +38,7 @@ const DocumentCard = ({
       <div className="flex h-fit w-full flex-col items-center">
         <div className="text-md m-1  flex justify-center">
           <div className="m-auto text-gray-500">
-            <p className="text-xl font-bold text-slate-400">Dummy Title</p>
+            <p className="text-xl font-bold text-slate-400">{document.title}</p>
           </div>
 
           <BsX
@@ -54,11 +46,11 @@ const DocumentCard = ({
               isSelection
                 ? setSelectedDocuments &&
                   setSelectedDocuments((prev) =>
-                    prev.filter((doc) => doc.id !== documentId)
+                    prev.filter((doc) => doc.id !== document.id)
                   )
-                : documentId &&
+                : document.id &&
                   documentMutation.mutate({
-                    documentId,
+                    documentId: document.id,
                   })
             }
             color="red"
@@ -74,15 +66,15 @@ const DocumentCard = ({
           <div className=" flex w-full  justify-evenly text-center text-xs">
             <div className="mx-3">
               <p className="text-slate-400">Difficulty</p>
-              <p className="text-yellow-300">{difficulty}%</p>
+              <p className="text-yellow-300">{document.difficulty}%</p>
             </div>
             <div className="mx-3">
               <p className="inline text-slate-400">Diversity</p>
-              <p className="text-red-500">{diversity}%</p>
+              <p className="text-red-500">{document.diversity}%</p>
             </div>
             <div className="mx-3">
               <p className="text-slate-400">Length</p>
-              <p className="inline text-green-500">{text_length}</p>
+              <p className="inline text-green-500">{document.text.length}</p>
             </div>
           </div>
         </div>

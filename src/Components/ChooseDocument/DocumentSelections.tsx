@@ -36,14 +36,7 @@ const DocumentSelections = ({
         </p>
       ) : (
         selectedDocuments.map((document) => (
-          <DocumentCard
-            isSelection
-            key={document.id}
-            text_length={document.text.length}
-            difficulty={0}
-            diversity={0}
-            documentId={document.id}
-          />
+          <DocumentCard isSelection key={document.id} document={document} />
         ))
       )}
     </div>
