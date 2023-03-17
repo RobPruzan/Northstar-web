@@ -116,16 +116,21 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
   //   },
   // });
   const handleCurrentDocumentChange = (document: CollectionDocument) => {
-    const filteredDocuments = documents.filter((doc) => doc.id !== document.id);
+    const filteredDocuments = documents.map((doc) => {
+      const thePassedDoc = doc.id === document.id;
+
+      if (thePassedDoc) {
+        return {
+          ...doc,
+          text: document.text,
+          title: document.title,
+        };
+      } else {
+        return doc;
+      }
+    });
     console.log("filteredDocuments", filteredDocuments, document.id);
-    setDocuments([
-      ...filteredDocuments,
-      {
-        ...document,
-        text: document.text,
-        title: document.title,
-      },
-    ]);
+    setDocuments(filteredDocuments);
   };
   const createDocumentMutation = api.collection.create.useMutation({
     onSuccess: async () => {
