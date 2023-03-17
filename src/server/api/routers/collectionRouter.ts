@@ -13,6 +13,7 @@ export const collectionRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string(),
+        type: z.string(),
         documents: z.array(
           z.object({
             title: z.string(),
@@ -25,6 +26,7 @@ export const collectionRouter = createTRPCRouter({
       const collection = await ctx.prisma.collection.create({
         data: {
           name: input.name,
+          type: input.type,
           totalDocuments: input.documents.length,
           Documents: {
             create: input.documents,

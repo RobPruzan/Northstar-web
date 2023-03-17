@@ -1,7 +1,10 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import { api } from "~/utils/api";
-import { PAGINATION_PAGE_SIZE } from "../Library";
+import {
+  LIBRARY_PAGINATION_PAGE_SIZE,
+  USER_PAGINATION_PAGE_SIZE,
+} from "../Library";
 
 const dummyNextPage = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -33,7 +36,10 @@ const Pagination = ({
   const [pagesAvailable, setPagesAvailable] = useState<number[]>();
   const totalPagesQuery = api.pagination.getTotalPages.useQuery(
     {
-      pageSize: PAGINATION_PAGE_SIZE,
+      pageSize:
+        collectionTypeToView === "library"
+          ? LIBRARY_PAGINATION_PAGE_SIZE
+          : USER_PAGINATION_PAGE_SIZE,
       type: collectionTypeToView ?? "library",
     },
     {
@@ -136,7 +142,7 @@ export const PaginationPage = ({
 }: PaginationPageProps) => {
   return (
     <button
-      disabled={totalPages <= page}
+      // disabled={totalPages <= page}
       onClick={() => {
         setCurrentPage(page);
       }}

@@ -10,7 +10,8 @@ export type LibraryProps = {
   collectionTypeToView: "user" | "library" | undefined;
 };
 
-export const PAGINATION_PAGE_SIZE = 9;
+export const USER_PAGINATION_PAGE_SIZE = 8;
+export const LIBRARY_PAGINATION_PAGE_SIZE = 9;
 const Library = ({
   collectionTypeToView,
   setCollectionTypeToView,
@@ -21,7 +22,10 @@ const Library = ({
 
   const paginationQuery = api.pagination.getContent.useQuery(
     {
-      limit: PAGINATION_PAGE_SIZE,
+      limit:
+        collectionTypeToView === "library"
+          ? LIBRARY_PAGINATION_PAGE_SIZE
+          : USER_PAGINATION_PAGE_SIZE,
       page: currentPage,
       type: collectionTypeToView ?? "library",
     },

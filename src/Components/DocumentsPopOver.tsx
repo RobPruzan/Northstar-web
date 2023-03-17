@@ -1,9 +1,9 @@
 import { Popover, Transition } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Fragment, useContext } from "react";
 
 import { type Document } from "@prisma/client";
 import { motion } from "framer-motion";
+import { BsChevronBarDown } from "react-icons/bs";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { setSelectedDocumentsUniquely } from "./ChooseDocument/UserDocuments";
 import DocumentCard from "./DocumentCard";
@@ -21,12 +21,13 @@ export const DocumentsPopOver = ({ documents }: Props) => {
             <Popover.Button
               className={`
                 ${open ? "" : "text-opacity-90"}
-                group inline-flex items-center rounded-md bg-slate-800 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
+                group float-right inline-flex w-fit items-center rounded-md bg-slate-800 p-3  text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
             >
-              <span>Documents</span>
-              <ChevronDownIcon
+              {/* <BsChevronBarDown /> */}
+              <BsChevronBarDown
+                size={40}
                 className={`${open ? "" : "text-opacity-70"}
-                  ml-2 h-5 w-5 text-slate-300 transition duration-150 ease-in-out group-hover:text-opacity-80`}
+                  h-5 w-5 text-slate-300 transition duration-150  ease-in-out group-hover:text-opacity-80`}
                 aria-hidden="true"
               />
             </Popover.Button>
@@ -39,7 +40,7 @@ export const DocumentsPopOver = ({ documents }: Props) => {
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-1"
             >
-              <Popover.Panel className="absolute left-1/2 z-10 mt-3 w-fit max-w-sm -translate-x-1/2 transform border border-gray-200 px-4 sm:px-0">
+              <Popover.Panel className="absolute left-1/2 z-10 mt-3 w-56 max-w-sm -translate-x-1/2 transform border border-gray-200 px-4 sm:px-0">
                 <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                   <div className="relative grid h-44 gap-8 bg-slate-500 p-7">
                     {documents.map((document) => (
