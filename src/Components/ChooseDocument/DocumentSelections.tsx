@@ -1,17 +1,12 @@
-import { type Document } from "@prisma/client";
-import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
+import { useContext, useEffect, useRef } from "react";
+import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import DocumentCard from "../DocumentCard";
 
-type Props = {
-  selectedDocuments: Document[];
-  setSelectedDocuments: Dispatch<SetStateAction<Document[]>>;
-};
-
-const DocumentSelections = ({
-  selectedDocuments,
-  setSelectedDocuments,
-}: Props) => {
+const DocumentSelections = () => {
   const cardBarRef = useRef<HTMLDivElement>(null);
+  const { selectedDocuments, setSelectedDocuments } = useContext(
+    SelectedDocumentsContext
+  );
   useEffect(() => {
     if (cardBarRef.current) {
       const lastChild = cardBarRef.current.lastElementChild;
@@ -28,7 +23,7 @@ const DocumentSelections = ({
   return (
     <div
       ref={cardBarRef}
-      className=" flex h-1/6   items-center overflow-x-scroll border-b border-slate-700 text-center"
+      className=" flex h-1/6 w-full  items-center overflow-x-scroll border-b border-slate-700 p-3 text-center"
     >
       {selectedDocuments.length == 0 ? (
         <p className=" w-full text-3xl  font-bold text-gray-500">

@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { api } from "~/utils/api";
 import { DocumentsPopOver } from "../DocumentsPopOver";
@@ -42,7 +43,10 @@ const Library = ({
           <>loading...</>
         ) : (
           paginationQuery.data?.map((collection) => (
-            <div
+            <motion.div
+              // eases in when mounted
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               key={collection.id}
               className=" m-2 flex h-36  w-56 flex-col justify-evenly rounded-md border border-slate-500 bg-slate-700 p-2 shadow-md"
             >
@@ -50,7 +54,7 @@ const Library = ({
                 {collection.name}
               </p>
               <DocumentsPopOver documents={collection.Documents} />
-            </div>
+            </motion.div>
           ))
         )}
 
