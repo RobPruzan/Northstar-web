@@ -21,6 +21,8 @@ const DocumentCard = ({ document, isSelection }: DocumentCardProps) => {
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
+
+  const isSelected = selectedDocuments.some((doc) => doc.id === document.id);
   // const queryClient = useQueryClient();
   // const documentMutation = api.document.deleteOne.useMutation({
   //   onSuccess: async () => {
@@ -33,7 +35,9 @@ const DocumentCard = ({ document, isSelection }: DocumentCardProps) => {
   return (
     <motion.div
       layout
-      className="relative  mx-2 flex min-h-min w-80 items-center justify-center rounded-md  border border-slate-500  bg-slate-800 py-1 px-3 font-semibold shadow-lg hover:shadow-lg"
+      className={`relative ${
+        isSelected ? "cursor-default bg-slate-400" : ""
+      } mx-2 flex min-h-min w-80 items-center justify-center rounded-md  border border-slate-500  bg-slate-800 py-1 px-3 font-semibold shadow-lg hover:shadow-lg`}
     >
       <div className="flex h-fit w-full flex-col items-center">
         <div className="text-md m-1  flex justify-center">
