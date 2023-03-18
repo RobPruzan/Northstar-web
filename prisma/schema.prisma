@@ -86,6 +86,7 @@ model DocumentInfo {
 
 model Collection {
     id                String     @id @default(cuid())
+    createdAt         DateTime   @default(now())
     averageDifficulty Int?
     totalDocuments    Int
     name              String

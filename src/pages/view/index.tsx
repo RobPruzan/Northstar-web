@@ -17,6 +17,7 @@ import BarChart from "~/components/Chart/BarChart";
 import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import NavBar from "~/components/NavBar";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
+import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -65,6 +66,11 @@ export const data = {
 const index = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { difficulties, setDifficulties } = useContext(DifficultiesContext);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { windowDifficulties, setWindowDifficulties } = useContext(
+    WindowDifficultiesContext
+  );
+  console.log("Hola", windowDifficulties);
   return (
     <>
       <NavBar />
@@ -73,6 +79,7 @@ const index = () => {
           {difficulty}
         </p>
       ))} */}
+      {/* {JSON.stringify(windowDifficulties)} */}
       <div className=" h-screen">
         <div className="w-full">
           <DocumentSelections />

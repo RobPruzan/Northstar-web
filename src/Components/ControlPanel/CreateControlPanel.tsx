@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { useContext, type Dispatch, type SetStateAction } from "react";
-import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
+import CollectionComboBox from "../ChooseDocument/CollectionComboBox";
 import CollectionTypeTabs from "../ChooseDocument/CollectionTypeTabs";
-import {
-  difficultSchema,
-  useGetDifficultyScore,
-} from "../hooks/useGetDifficultyScore";
+import { useGetDifficultyScore } from "../hooks/useGetDifficultyScore";
+import { useGetWindowScores } from "../hooks/useGetWindowScores";
 export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
   setCollectionTypeToView: Dispatch<
@@ -23,34 +21,19 @@ const CreateControlPanel = ({
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
-  const { difficulties, setDifficulties } = useContext(DifficultiesContext);
 
   const difficultyMutation = useGetDifficultyScore();
+  const windowDifficultyMutation = useGetWindowScores();
   const handleCompare = () => {
-    // selectedDocuments.forEach(async (doc) => {
-    //   console.log("the doc", doc);
-    //   const data = await difficultyMutation.mutateAsync(
-    //   {
-    //     text: doc.text,
-    //   }
-    //   );
-    // });
     for (const doc of selectedDocuments) {
-      console.log("hello??s");
-      difficultyMutation
-        .mutateAsync({
-          text: doc.text,
-        })
-        .then((data) => {
-          console.log("fodsaif");
-          const validatedData = difficultSchema.safeParse(data);
-          if (validatedData.success) {
-            setDifficulties((prev) => [...prev, validatedData.data.difficulty]);
-          }
-          console.log("the data", data);
-        })
-        .catch((err) => console.log("err", err));
+      difficultyMutation.mutate({
+        text: doc.text,
+      });
+      windowDifficultyMutation.mutate({
+        text: doc.text,
+      });
     }
+
     // difficultyMutation.mutate({
     //   text
     // })
@@ -62,16 +45,11 @@ const CreateControlPanel = ({
           collectionTypeToView={collectionTypeToView}
           setCollectionTypeToView={setCollectionTypeToView}
         />
-        {/* <CollectionComboBox /> */}
-        {difficulties.map((difficulty) => (
-          <p key={difficulty} className="text-xl font-bold text-gray-300">
-            {difficulty}
-          </p>
-        ))}
+        <CollectionComboBox />
       </div>
       <Link
         onClick={() => {
-          handleCompare();
+          void handleCompare();
         }}
         href={"/view"}
         className="m-auto mb-5"

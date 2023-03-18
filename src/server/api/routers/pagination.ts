@@ -32,6 +32,10 @@ export const paginationRouter = createTRPCRouter({
               where: {
                 type: input.type,
               },
+
+              orderBy: {
+                createdAt: "desc",
+              },
             })
             .then((res) => res.length)) / input.pageSize
         ),
