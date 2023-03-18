@@ -6,9 +6,11 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 
 import { useState } from "react";
+import { type WindowDifficulty } from "~/components/hooks/useGetWindowScores";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { StatsContext, type Stats } from "~/Context/StatsContext";
+import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 import "~/styles/globals.css";
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -19,20 +21,27 @@ const MyApp: AppType<{ session: Session | null }> = ({
   const [stats, setStats] = useState<Stats>({
     difficulty: [],
   });
+  const [windowDifficulties, setWindowDifficulties] = useState<
+    WindowDifficulty[]
+  >([]);
   const [difficulties, setDifficulties] = useState<number[]>([]);
 
   return (
-    <DifficultiesContext.Provider value={{ difficulties, setDifficulties }}>
-      <StatsContext.Provider value={{ stats, setStats }}>
-        <SelectedDocumentsContext.Provider
-          value={{ selectedDocuments, setSelectedDocuments }}
-        >
-          <SessionProvider session={session}>
-            <Component {...pageProps} />
-          </SessionProvider>
-        </SelectedDocumentsContext.Provider>
-      </StatsContext.Provider>
-    </DifficultiesContext.Provider>
+    <WindowDifficultiesContext.Provider
+      value={{ windowDifficulties, setWindowDifficulties }}
+    >
+      <DifficultiesContext.Provider value={{ difficulties, setDifficulties }}>
+        <StatsContext.Provider value={{ stats, setStats }}>
+          <SelectedDocumentsContext.Provider
+            value={{ selectedDocuments, setSelectedDocuments }}
+          >
+            <SessionProvider session={session}>
+              <Component {...pageProps} />
+            </SessionProvider>
+          </SelectedDocumentsContext.Provider>
+        </StatsContext.Provider>
+      </DifficultiesContext.Provider>
+    </WindowDifficultiesContext.Provider>
   );
 };
 
