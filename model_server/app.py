@@ -17,7 +17,16 @@ CORS(
         }
     },
 )
+# CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000"]}})
 # app.config["CORS_HEADERS"] = "Content-Type"
+
+
+# @app.after_request
+# def add_cors_headers(response):
+#     response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
+#     response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+#     response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+#     return response
 
 
 # @cross_origin(origin="localhost:3000", headers=["Content- Type", "Authorization"])
