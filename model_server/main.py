@@ -466,8 +466,9 @@ def sliding_window(text):
     for idx, i in enumerate(words):
         mapd.append((i, (inter_scores[idx] - miny) / spread))
     mapd.append(("", 0))
+    print("Inter scores?", inter_scores)
 
-    return {"original": text, "interpretation": mapd}
+    return {"original": text, "interpretation": mapd, "raw_scores": inter_scores}
 
 
 # def sliding_window(text):

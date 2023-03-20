@@ -39,7 +39,7 @@ export const TextView = () => {
   const [tokens, setTokens] = useState(
     word_tokenize(selectedDocuments[0]?.text)
   );
-  console.log("What da", selectedDocuments, tokens);
+
   const [currentWord, setCurrentWord] = useState("");
   // you're gonna need to tokenize the text
   // flex flex wrap the tokenized text, which will be in divs

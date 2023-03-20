@@ -6,19 +6,16 @@ import {
   type SetStateAction,
 } from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
-import CollectionComboBox from "../ChooseDocument/CollectionComboBox";
+
+import CollectionSearch from "../ChooseDocument/CollectionSearch";
 import CollectionTypeTabs from "../ChooseDocument/CollectionTypeTabs";
 import { useGetDifficultyScore } from "../hooks/useGetDifficultyScore";
 import { useGetWindowScores } from "../hooks/useGetWindowScores";
-import ModelRadioGroup from "./RadioGroups";
+import SpeedRadioGroups from "./SpeedRadioGroups";
 export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
-  setCollectionTypeToView: Dispatch<
-    SetStateAction<"user" | "library" | undefined>
-  >;
-  collectionTypeToView: "user" | "library" | undefined;
-  setDifficulties: Dispatch<SetStateAction<number[]>>;
-  difficulties: number[];
+  setCollectionTypeToView: Dispatch<SetStateAction<CollectionType | undefined>>;
+  collectionTypeToView: CollectionType | undefined;
 };
 const CreateControlPanel = ({
   collectionTypeToView,
@@ -52,7 +49,7 @@ const CreateControlPanel = ({
           collectionTypeToView={collectionTypeToView}
           setCollectionTypeToView={setCollectionTypeToView}
         />
-        <CollectionComboBox />
+        <CollectionSearch setCollectionTypeToView={setCollectionTypeToView} />
         {/* <div className="mt-20 w-full text-center">
           <label
             htmlFor="customRange1"
@@ -87,7 +84,7 @@ const CreateControlPanel = ({
             onChange={(e) => setValue(parseInt(e.target.value))}
           />
         </div> */}
-        <ModelRadioGroup />
+        <SpeedRadioGroups />
       </div>
       <Link
         onClick={() => {

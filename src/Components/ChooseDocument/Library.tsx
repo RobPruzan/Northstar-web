@@ -1,5 +1,11 @@
 import { motion } from "framer-motion";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import {
+  useContext,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { QueryContext } from "~/Context/QueryContext";
 import { api } from "~/utils/api";
 import { DocumentsPopOver } from "../DocumentsPopOver";
 import CreateCollection from "./CreateCollection";
@@ -20,6 +26,7 @@ const Library = ({
   const [enabled, setEnabled] = useState(false);
   // const collectionQuery = api.collection.getAll.useQuery();
   const [currentPage, setCurrentPage] = useState(1);
+  const { searchName } = useContext(QueryContext);
 
   const paginationQuery = api.pagination.getContent.useQuery(
     {
@@ -29,6 +36,7 @@ const Library = ({
           : USER_PAGINATION_PAGE_SIZE,
       page: currentPage,
       type: collectionTypeToView ?? "library",
+      searchName: searchName,
     },
     {
       enabled: currentPage > 0 && collectionTypeToView !== undefined,

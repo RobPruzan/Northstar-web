@@ -15,7 +15,7 @@ export const useGetDifficultyScore = () => {
     : "";
   const difficultyMutation = useMutation(
     async ({ text }: { text: string }) => {
-      console.log("BEING CLALLEDFDS", url);
+
       const test = await fetch(url, {
         method: "POST",
         headers: {
@@ -23,7 +23,7 @@ export const useGetDifficultyScore = () => {
         },
         body: JSON.stringify({ text }),
       });
-      // console.log("wo hoo", url, test.json());
+
 
       return test.json();
     },
