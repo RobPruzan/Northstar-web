@@ -16,6 +16,7 @@ import { Line } from "react-chartjs-2";
 import BarChart from "~/components/Chart/BarChart";
 import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import NavBar from "~/components/NavBar";
+import TextView from "~/components/ViewHelpers/TextView";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 ChartJS.register(
@@ -86,7 +87,11 @@ const index = () => {
         </div>
 
         <div className="flex w-screen">
-          <div className="w-1/2 border-r border-slate-500 ">fsadfasd</div>
+          <div className="w-1/2 border-r border-slate-500 ">
+            <div className="flex h-96 flex-col border border-red-500">
+              <TextView />
+            </div>
+          </div>
           <div className="w-1/2">
             <Line
               style={{
