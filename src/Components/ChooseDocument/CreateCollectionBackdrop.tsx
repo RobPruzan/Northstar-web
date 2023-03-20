@@ -129,7 +129,7 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
         return doc;
       }
     });
-    console.log("filteredDocuments", filteredDocuments, document.id);
+
     setDocuments(filteredDocuments);
   };
   const createDocumentMutation = api.collection.create.useMutation({
@@ -193,7 +193,7 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                 //   }));
                 // }}
                 onChange={(event) => {
-                  console.log(creationDocument.active);
+
                   if (creationDocument.active) {
                     setCreationDocument((prev) => ({
                       ...prev,
@@ -293,10 +293,7 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                 {documents.map((document, index) => (
                   <button
                     onClick={() => {
-                      console.log(
-                        "Document that is being set to current: ",
-                        document
-                      );
+
                       setCurrentDocument(document);
                       setCreationDocument((prev) => ({
                         ...prev,

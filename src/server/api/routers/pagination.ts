@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-
+type WhereClause =
+  | {
+      type: string;
+    }
+  | {
+      name: {
+        equals: string;
+      };
+    };
 export const paginationRouter = createTRPCRouter({
   getContent: protectedProcedure
     .input(
@@ -8,18 +16,29 @@ export const paginationRouter = createTRPCRouter({
         page: z.number(),
         limit: z.number(),
         type: z.string(),
+        searchName: z.string().optional(),
       })
     )
     .query(({ ctx, input }) => {
+      let whereClause: WhereClause = {
+        type: input.type,
+      };
+
+      if (input.searchName !== undefined) {
+        whereClause = {
+          name: {
+            equals: input.searchName,
+          },
+        };
+      }
+
       return ctx.prisma.collection.findMany({
         skip: (input.page - 1) * input.limit,
         take: input.limit,
         include: {
           Documents: true,
         },
-        where: {
-          type: input.type,
-        },
+        where: whereClause,
       });
     }),
   getTotalPages: protectedProcedure

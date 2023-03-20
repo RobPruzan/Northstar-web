@@ -33,17 +33,17 @@ export const useGetWindowScores = () => {
         body: JSON.stringify({ text }),
       });
       const result = test.json();
-      console.log("WINDOW DIFF RESULT", result);
+
       return result;
     },
     {
       onSuccess: (data) => {
-        console.log("the data", data);
+
         const validatedWindowDifficulties =
           windowDifficultySchema.safeParse(data);
-        console.log("validation result", validatedWindowDifficulties);
+
         if (validatedWindowDifficulties.success) {
-          console.log(validatedWindowDifficulties);
+
           setWindowDifficulties((prev) => [
             ...prev,
             validatedWindowDifficulties.data,

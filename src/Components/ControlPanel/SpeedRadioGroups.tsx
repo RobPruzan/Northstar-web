@@ -1,37 +1,39 @@
 import { RadioGroup } from "@headlessui/react";
 import { useState } from "react";
 
-const plans = [
+const modelCalculationType = [
   {
     name: "Max Power",
 
-    speed: "Slow",
+    description:
+      "This will give the highest precision, but will take the longest to calculate.",
   },
   {
     name: "Average",
 
-    speed: "medium",
+    description: "This will give a good balance between precision and speed.",
   },
   {
     name: "Chill",
 
-    speed: "Fast",
+    description:
+      "This will give the lowest precision, but will be the fastest to calculate.",
   },
 ];
 
-export default function ModelRadioGroup() {
-  const [selected, setSelected] = useState(plans[0]);
+export default function SpeedRadioGroups() {
+  const [selected, setSelected] = useState(modelCalculationType[0]);
 
   return (
-    <div className=" w-full  py-16">
+    <div className=" w-full  py-12">
       <div className="mx-auto w-full max-w-md">
         <RadioGroup value={selected} onChange={setSelected}>
           <RadioGroup.Label className="sr-only">Server size</RadioGroup.Label>
           <div className="space-y-2">
-            {plans.map((plan) => (
+            {modelCalculationType.map((type) => (
               <RadioGroup.Option
-                key={plan.name}
-                value={plan}
+                key={type.name}
+                value={type}
                 className={({ active, checked }) =>
                   `${
                     active
@@ -57,7 +59,7 @@ export default function ModelRadioGroup() {
                               checked ? "text-white" : "text-gray-300"
                             }`}
                           >
-                            {plan.name}
+                            {type.name}
                           </RadioGroup.Label>
                           <RadioGroup.Description
                             as="span"
@@ -65,8 +67,7 @@ export default function ModelRadioGroup() {
                               checked ? "text-sky-100" : "text-gray-200"
                             }`}
                           >
-                            <span aria-hidden="true">&middot;</span>{" "}
-                            <span>{plan.speed}</span>
+                            <p className="text-sm">{type.description}</p>
                           </RadioGroup.Description>
                         </div>
                       </div>

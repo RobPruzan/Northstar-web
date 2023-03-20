@@ -1,6 +1,12 @@
 import { Tab } from "@headlessui/react";
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import {
+  useContext,
+  useEffect,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { z } from "zod";
+import { QueryContext } from "~/Context/QueryContext";
 import { type CollectionType } from "../ControlPanel/CreateControlPanel";
 
 function classNames(...classes: string[]) {
@@ -43,7 +49,9 @@ export default function CollectionTypeTabs({
     return localStorage.getItem("collectionType");
   };
 
-  const setCollectionToStorage = (collectionType: CollectionType) => {
+  const { setSearchName } = useContext(QueryContext);
+
+  const setCollectionToStorage = (collectionType: "user" | "library") => {
     localStorage.setItem("collectionType", collectionType);
   };
   useEffect(() => {
@@ -54,7 +62,7 @@ export default function CollectionTypeTabs({
     if (collectionTypeValidation.success) {
       setCollectionTypeToView(collectionTypeValidation.data);
     }
-  }, []);
+  }, [setCollectionTypeToView]);
   return (
     <div className="mt-3 w-full max-w-md px-2 sm:px-0">
       <Tab.Group
@@ -71,13 +79,16 @@ export default function CollectionTypeTabs({
             case collectionTypes.user.id:
               setCollectionTypeToView("user");
               setCollectionToStorage("user");
+              setSearchName(undefined);
               break;
 
             case collectionTypes.library.id:
               setCollectionTypeToView("library");
               setCollectionToStorage("library");
+              setSearchName(undefined);
               break;
             default:
+              setSearchName(undefined);
               break;
           }
         }}
