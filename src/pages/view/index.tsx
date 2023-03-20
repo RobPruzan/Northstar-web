@@ -12,11 +12,12 @@ import {
 
 import { faker } from "@faker-js/faker";
 import { useContext } from "react";
-import { Line } from "react-chartjs-2";
 import BarChart from "~/components/Chart/BarChart";
+import LineChart from "~/components/Chart/LineChart";
 import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import NavBar from "~/components/NavBar";
-import TextView from "~/components/ViewHelpers/TextView";
+
+import { TextView } from "~/components/ViewHelpers/TextView";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 ChartJS.register(
@@ -80,7 +81,7 @@ const index = () => {
           {difficulty}
         </p>
       ))} */}
-      {/* {JSON.stringify(windowDifficulties)} */}
+      {/* {JSON.stringify(windowDiffic pulties)} */}
       <div className=" h-screen">
         <div className="w-full">
           <DocumentSelections />
@@ -88,20 +89,12 @@ const index = () => {
 
         <div className="flex w-screen">
           <div className="w-1/2 border-r border-slate-500 ">
-            <div className="flex h-96 flex-col border border-red-500">
+            <div className="flex h-96 flex-col ">
               <TextView />
             </div>
           </div>
           <div className="w-1/2">
-            <Line
-              style={{
-                height: "60vh",
-                position: "relative",
-                marginBottom: "1%",
-                padding: "1%",
-              }}
-              data={data}
-            />
+            <LineChart />
             <BarChart />
           </div>
         </div>

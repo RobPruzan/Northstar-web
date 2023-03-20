@@ -406,22 +406,21 @@ def phon(text):
 def sliding_window(text):
     words = word_tokenize(text)
     improved_window = []
-    step = 3
+    improved_wind_preds = []
     for idx, text in enumerate(words):
-        if idx % step == 0:
-            if idx <= len(words) - 26:
-                x = " ".join(words[idx : idx + 25])
-                throw_away = []
-                score = 0
-                for idx, i in enumerate(range(idx, idx + 25)):
-                    if idx == 0:
-                        better_prediction = -(predict(x).item() * 1.786 + 6.4) + 10
-                        score = better_prediction
-                        throw_away.append((better_prediction, i))
-                    else:
-                        throw_away.append((score, i))
+        if idx <= len(words) - 26:
+            x = " ".join(words[idx : idx + 25])
+            throw_away = []
+            score = 0
+            for idx, i in enumerate(range(idx, idx + 25)):
+                if idx == 0:
+                    better_prediction = -(predict(x).item() * 1.786 + 6.4) + 10
+                    score = better_prediction
+                    throw_away.append((better_prediction, i))
+                else:
+                    throw_away.append((score, i))
 
-                improved_window.append(throw_away)
+            improved_window.append(throw_away)
     average_scores = {k: 0 for k in range(len(words) - 1)}
     total_windows = {k: 0 for k in range(len(words) - 1)}
     for idx, i in enumerate(improved_window):
@@ -435,14 +434,29 @@ def sliding_window(text):
 
     inter_scores = [v for v in average_scores.values()]
     copy_list = inter_scores.copy()
-
+    print(inter_scores)
     while len(inter_scores) <= len(words) - 1:
         inter_scores.append(copy_list[-1])
 
     x = list(range(len(inter_scores)))
     y = inter_scores
+    range_chart = [min(y), max(y)]
+    # fig, ax = plt.subplots()
 
+    # ax.plot(x, y, color='orange', linewidth=2)
+    # ax.grid(False)
+    # plt.xlabel('Word Number', fontweight='bold')
+    # plt.ylabel('Difficulty Score', fontweight='bold')
+    # plt.suptitle('Difficulty Score Across Text', fontsize=14, fontweight='bold')
+    # plt.style.use('ggplot')
+    # ax.set_facecolor('w')
     shaded_areas = generate_patches(x, y, 0.42)
+
+    # for area in shaded_areas:
+    #     print(range_chart[0], range_chart[1])
+    #     ax.add_patch(patches.Rectangle((area[0],range_chart[0]), area[1]-area[0], range_chart[1]-range_chart[0], alpha=0.2))
+    # print(shaded_areas)
+    # fig = plt.gcf()
 
     mapd = [("", 0)]
     maxy = max(inter_scores)
@@ -453,12 +467,67 @@ def sliding_window(text):
         mapd.append((i, (inter_scores[idx] - miny) / spread))
     mapd.append(("", 0))
 
-    return {
-        "original": text,
-        "interpretation": mapd,
-        "raw_scores": inter_scores,
-        "shaded_areas": shaded_areas,
-    }
+    return {"original": text, "interpretation": mapd}
+
+
+# def sliding_window(text):
+#     words = word_tokenize(text)
+#     improved_window = []
+#     step = 3
+#     for idx, text in enumerate(words):
+#         if idx % step == 0:
+#             if idx <= len(words) - 26:
+#                 x = " ".join(words[idx : idx + 25])
+#                 throw_away = []
+#                 score = 0
+#                 for idx, i in enumerate(range(idx, idx + 25)):
+#                     if idx == 0:
+#                         better_prediction = -(predict(x).item() * 1.786 + 6.4) + 10
+#                         score = better_prediction
+#                         throw_away.append((better_prediction, i))
+#                     else:
+#                         throw_away.append((score, i))
+
+
+#     improved_window = improved_window[:-2]
+#     print("improved window", improved_window, "\n\n\n\n\n\n\n\n\n")
+#     average_scores = {k: 0 for k in range(len(words) - 1)}
+#     total_windows = {k: 0 for k in range(len(words) - 1)}
+#     for idx, i in enumerate(improved_window):
+#         for score, idx in i:
+#             average_scores[idx] += score
+#             total_windows[idx] += 1
+
+#     for k, v in total_windows.items():
+#         if v != 0:
+#             average_scores[k] /= v
+
+#     inter_scores = [v for v in average_scores.values()]
+#     copy_list = inter_scores.copy()
+
+#     while len(inter_scores) <= len(words) - 1:
+#         inter_scores.append(copy_list[-1])
+
+#     x = list(range(len(inter_scores)))
+#     y = inter_scores
+
+#     shaded_areas = generate_patches(x, y, 0.42)
+
+#     mapd = [("", 0)]
+#     maxy = max(inter_scores)
+#     miny = min(inter_scores)
+#     spread = maxy - miny
+
+#     for idx, i in enumerate(words):
+#         mapd.append((i, (inter_scores[idx] - miny) / spread))
+#     mapd.append(("", 0))
+
+#     return {
+#         "original": text,
+#         "interpretation": mapd,
+#         "raw_scores": inter_scores,
+#         "shaded_areas": shaded_areas,
+#     }
 
 
 def speech_to_text(speech, target):
