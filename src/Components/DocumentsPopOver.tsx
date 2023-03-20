@@ -83,7 +83,7 @@ export const DocumentsPopOver = ({ documents }: Props) => {
 
 //
 
-const StyledMenu = styled((props: MenuProps) => (
+export const StyledMenu = styled((props: MenuProps) => (
   <Menu
     elevation={0}
     anchorOrigin={{
