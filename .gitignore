@@ -57,3 +57,6 @@ instance
 *.log
 *.pot
 *.pyc
+
+#model stuff
+pytorchBERTmodel

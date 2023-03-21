@@ -1,5 +1,7 @@
 import { Combobox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 import {
   Fragment,
   useContext,
@@ -11,6 +13,7 @@ import {
 import { z } from "zod";
 import { QueryContext } from "~/Context/QueryContext";
 import { api } from "~/utils/api";
+import { type CollectionType } from "../ControlPanel/CreateControlPanel";
 
 export const personSchema = z.object({
   id: z.number(),
@@ -24,22 +27,24 @@ export type CollectionSearchProps = {
   setCollectionTypeToView: Dispatch<
     SetStateAction<"user" | "library" | undefined>
   >;
+  collectionTypeToView: CollectionType | undefined;
 };
 export default function CollectionSearch({
   setCollectionTypeToView,
+  collectionTypeToView,
 }: CollectionSearchProps) {
   const [query, setQuery] = useState("");
 
   const searchQuery = api.collection.searchQuery.useQuery({
     name: query,
   });
+  // TODO clean up
   const collectionNames = [
-    "",
     ...(searchQuery.data ?? []).map((data) => data.name),
   ];
 
   const { setSearchName, searchName } = useContext(QueryContext);
-
+  const queryClient = useQueryClient();
   useEffect(() => {
     if (searchName === undefined) {
       setQuery("");
@@ -70,19 +75,17 @@ export default function CollectionSearch({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
             afterLeave={() => {
+              console.log("a", query);
               setSearchName(query);
               const collectionType = collectionTypeSchema.safeParse(
                 searchQuery.data?.find((data) => data.name === query)?.type
               );
-              console.log(
-                "collectionType",
-                collectionType.success
-                  ? collectionType.data
-                  : collectionType.error
-              );
 
               collectionType.success &&
                 setCollectionTypeToView(collectionType.data);
+              const qc = getQueryKey(api.pagination.getTotalPages);
+              console.log("qc", qc);
+              void queryClient.invalidateQueries(qc);
             }}
           >
             <Combobox.Options className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">

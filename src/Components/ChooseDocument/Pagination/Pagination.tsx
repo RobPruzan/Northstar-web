@@ -1,5 +1,11 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
+import {
+  useContext,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
+import { QueryContext } from "~/Context/QueryContext";
 import { api } from "~/utils/api";
 import {
   LIBRARY_PAGINATION_PAGE_SIZE,
@@ -32,7 +38,7 @@ const Pagination = ({
   setCurrentPage,
   collectionTypeToView,
 }: PaginationProps) => {
-  // always equal to the current + 2, and the end - 2
+  const { searchName } = useContext(QueryContext);
   const [pagesAvailable, setPagesAvailable] = useState<number[]>();
   const totalPagesQuery = api.pagination.getTotalPages.useQuery(
     {
@@ -41,6 +47,7 @@ const Pagination = ({
           ? LIBRARY_PAGINATION_PAGE_SIZE
           : USER_PAGINATION_PAGE_SIZE,
       type: collectionTypeToView ?? "library",
+      searchName,
     },
     {
       onSuccess: (data) => {
