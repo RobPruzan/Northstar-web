@@ -24,7 +24,7 @@ export const paginationRouter = createTRPCRouter({
         type: input.type,
       };
 
-      if (input.searchName !== undefined) {
+      if (input.searchName) {
         whereClause = {
           name: {
             equals: input.searchName,
@@ -39,18 +39,36 @@ export const paginationRouter = createTRPCRouter({
           Documents: true,
         },
         where: whereClause,
+        orderBy: {
+          createdAt: "desc",
+        },
       });
     }),
   getTotalPages: protectedProcedure
-    .input(z.object({ pageSize: z.number(), type: z.string() }))
-    .query(async ({ ctx, input }) =>
-      Math.max(
+    .input(
+      z.object({
+        pageSize: z.number(),
+        type: z.string(),
+        searchName: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      let whereClause: WhereClause = {
+        type: input.type,
+      };
+      if (input.searchName) {
+        whereClause = {
+          name: {
+            equals: input.searchName,
+          },
+        };
+      }
+
+      return Math.max(
         Math.ceil(
           (await ctx.prisma.collection
             .findMany({
-              where: {
-                type: input.type,
-              },
+              where: whereClause,
 
               orderBy: {
                 createdAt: "desc",
@@ -59,6 +77,6 @@ export const paginationRouter = createTRPCRouter({
             .then((res) => res.length)) / input.pageSize
         ),
         1
-      )
-    ),
+      );
+    }),
 });

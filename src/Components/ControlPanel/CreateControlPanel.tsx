@@ -43,13 +43,16 @@ const CreateControlPanel = ({
     // })
   };
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col overflow-y-scroll">
       <div className=" flex h-full w-full flex-col items-center p-2 ">
         <CollectionTypeTabs
           collectionTypeToView={collectionTypeToView}
           setCollectionTypeToView={setCollectionTypeToView}
         />
-        <CollectionSearch setCollectionTypeToView={setCollectionTypeToView} />
+        <CollectionSearch
+          collectionTypeToView={collectionTypeToView}
+          setCollectionTypeToView={setCollectionTypeToView}
+        />
         {/* <div className="mt-20 w-full text-center">
           <label
             htmlFor="customRange1"
@@ -94,7 +97,7 @@ const CreateControlPanel = ({
         className="m-auto mb-5"
       >
         <button className=" mt-auto h-fit w-fit rounded border border-slate-400 bg-slate-700 py-2 px-4 font-bold text-white transition ease-out hover:scale-105 hover:bg-slate-800">
-          Compare
+          Analyze
         </button>
       </Link>
     </div>

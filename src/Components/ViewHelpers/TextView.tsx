@@ -1,4 +1,5 @@
-import { useContext, useState } from "react";
+import { type Document } from "@prisma/client";
+import { useContext, useEffect, useState } from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 const puncs = [".", ",", "?", "!"];
@@ -26,7 +27,11 @@ const joinTokenizedWords = (tokens: string[]) => {
   return joined_tokens;
 };
 
-export const TextView = () => {
+export type TextViewProps = {
+  document: Document;
+};
+
+export const TextView = ({ document }: TextViewProps) => {
   const { windowDifficulties } = useContext(WindowDifficultiesContext);
   const { selectedDocuments } = useContext(SelectedDocumentsContext);
 
@@ -36,17 +41,19 @@ export const TextView = () => {
   // const tempText =
   //   "Hello, my name is John. I am a student at the University of Washington. I am studying computer science. I am also a TA for";
   // const tokens = word_tokenize(tempText);
-  const [tokens, setTokens] = useState(
-    word_tokenize(selectedDocuments[0]?.text)
-  );
+  const [tokens, setTokens] = useState(word_tokenize(document.text));
 
   const [currentWord, setCurrentWord] = useState("");
   // you're gonna need to tokenize the text
   // flex flex wrap the tokenized text, which will be in divs
   // each word should probably be it's own component, can just be a div
+  console.log("selected doc!!!", document);
+  console.log("tokens", tokens);
+  useEffect(() => {
+    setTokens(word_tokenize(document.text));
+  }, [document.text]);
   return (
     <div
-      suppressContentEditableWarning
       // onBlur={(e) => {
       //   const newString = joinTokenizedWords([...tokens, currentWord]);
       //   e.target.innerText = newString;
@@ -88,15 +95,27 @@ export const TextView = () => {
           we can have some util function create a map of words in the form of
           {index: word} e.g {0: "Hello", 1: "Hello", 2: "Hello", 3: "my", 4: "my" ...}
           we can also store meta data form the word it's mapped to 
-          e.g {0: {word: "Hello", difficulty: 0.5, ...}}
+          e.g {0: {word: "Hello", diff
+          iculty: 0.5, ...}}
           then we can make 
       */}
-      {/* {windowDifficulties[0]?.interpretation.map(
-        (token, index) =>
-          index != tokens.length - 1 && (
-            <TokenView key={index} token={token[0]} heatMapValue={token[1]} />
+      {/* {windowDifficulties[0]
+        ? windowDifficulties[0].interpretation.map(
+            (token, index) =>
+              index != tokens.length - 1 && (
+                <TokenView
+                  key={index}
+                  token={token[0]}
+                  heatMapValue={token[1]}
+                />
+              )
           )
-      )} */}
+        : tokens.map((token, index) => (
+            <TokenView key={index} token={token} heatMapValue={0} />
+          ))} */}
+      {tokens.map((token, index) => (
+        <TokenView key={index} token={token} heatMapValue={0} />
+      ))}
       <div className="w-full border-t border-gray-600"></div>
     </div>
   );

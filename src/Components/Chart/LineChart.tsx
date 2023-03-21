@@ -45,13 +45,19 @@ const difficultiesToData = (difficulties: WindowDifficulty[]) => {
   difficulties.forEach((difficultyData, index) => {
     dataSets.push({
       label: `Dataset ${index}`,
-      data: difficultyData.interpretation.map(([word, score]) => score),
+      data: difficultyData.interpretation
+        .map(([word, score]) => score)
+        .filter((score) => score != 0),
       borderColor: "rgb(255, 99, 132)",
       backgroundColor: "rgba(255, 99, 132, 0.5)",
     });
   });
   const sizes = difficulties.reduce<number[]>((acc, difficultyData) => {
-    return [...acc, difficultyData.interpretation.length];
+    return [
+      ...acc,
+      difficultyData.interpretation.filter(([word, score]) => score != 0)
+        .length,
+    ];
   }, []);
   const labels = range(0, Math.max(...sizes)).map((idx) => idx.toString());
 

@@ -431,8 +431,8 @@ def sliding_window(text):
     for k, v in total_windows.items():
         if v != 0:
             average_scores[k] /= v
-
-    inter_scores = [v for v in average_scores.values()]
+    print("Average scores ", average_scores)
+    inter_scores = [v for v in average_scores.values() if v != 0]
     copy_list = inter_scores.copy()
     print(inter_scores)
     while len(inter_scores) <= len(words) - 1:

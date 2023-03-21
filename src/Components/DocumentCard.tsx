@@ -16,8 +16,9 @@ export const COLOR_MAP = (difficulty: number) => {
 export type DocumentCardProps = {
   document: Document;
   isSelection?: boolean;
+  cursor: string;
 };
-const DocumentCard = ({ document, isSelection }: DocumentCardProps) => {
+const DocumentCard = ({ document, isSelection, cursor }: DocumentCardProps) => {
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
@@ -36,7 +37,7 @@ const DocumentCard = ({ document, isSelection }: DocumentCardProps) => {
     <motion.div
       layout
       className={`relative ${
-        isSelected ? "cursor-default bg-slate-400" : ""
+        isSelected ? cursor + " bg-slate-400" : ""
       } mx-2 flex min-h-min w-80 items-center justify-center rounded-md  border border-slate-500  bg-slate-800 py-1 px-3 font-semibold shadow-lg hover:shadow-lg`}
     >
       <div className="flex h-fit w-full flex-col items-center">

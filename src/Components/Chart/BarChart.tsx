@@ -1,6 +1,6 @@
-import { faker } from "@faker-js/faker";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
+import { DifficultiesContext } from "~/Context/DifficultiesContext";
 type ChartData = {
   labels: string[];
   datasets: {
@@ -16,19 +16,15 @@ const BarChart = () => {
     datasets: [],
   });
 
+  const { difficulties } = useContext(DifficultiesContext);
+
   useEffect(() => {
     const data = {
       labels: ["January", "February", "March", "April", "May", "June"],
       datasets: [
         {
-          label: "Sales",
-          data: [
-            faker.datatype.number({ min: 0, max: 10 }),
-            faker.datatype.number({ min: 0, max: 10 }),
-            faker.datatype.number({ min: 0, max: 10 }),
-            faker.datatype.number({ min: 0, max: 10 }),
-            faker.datatype.number({ min: 0, max: 10 }),
-          ],
+          label: "Difficulty",
+          data: difficulties.filter((d) => d != 0),
           backgroundColor: [
             "#FF6384",
             "#36A2EB",
