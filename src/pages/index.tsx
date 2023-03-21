@@ -4,11 +4,7 @@ import Head from "next/head";
 import Link from "next/link";
 import NavBar from "~/components/NavBar";
 
-import { api } from "~/utils/api";
-
 const Home: NextPage = () => {
-  const user = api.user.getAll.useQuery();
-
   return (
     <>
       <NavBar />
@@ -37,12 +33,14 @@ const Home: NextPage = () => {
                   Northstar
                 </p>
                 <p className="mb-4 text-lg text-gray-500">
-                  Northstar generates automatic literacy assessments with state
-                  of the art machine learning models
+                  Automatic literacy assessments with state of the art machine
+                  learning models
                 </p>
-                <button className="rounded-md border border-slate-400 bg-slate-900 px-6 py-2 text-lg text-slate-500 shadow-xl  transition hover:scale-105 hover:bg-slate-800 ">
-                  <Link href={{ pathname: "/create" }}>Get Started</Link>
-                </button>
+                <Link href={{ pathname: "/create" }}>
+                  <button className="rounded-md border border-slate-400 bg-slate-900 px-6 py-2 text-lg text-slate-500 shadow-xl  transition hover:scale-105 hover:bg-slate-800 ">
+                    Get Started
+                  </button>
+                </Link>
               </div>
             </section>
 

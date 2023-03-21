@@ -26,7 +26,6 @@ const index = () => {
         <div className="flex h-4/5 w-full overflow-hidden">
           <div className="flex h-full w-2/12 border border-l-0 border-t-0 border-slate-700 shadow-2xl">
             <CreateControlPanel
-
               collectionTypeToView={collectionTypeToView}
               setCollectionTypeToView={setCollectionTypeToView}
             />

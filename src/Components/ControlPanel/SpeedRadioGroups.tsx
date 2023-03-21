@@ -22,12 +22,14 @@ const modelCalculationType = [
 ];
 
 export default function SpeedRadioGroups() {
-  const [selected, setSelected] = useState(modelCalculationType[0]);
+  const [calculationType, setCalculationType] = useState(
+    modelCalculationType[0]
+  );
 
   return (
-    <div className=" w-full  py-12">
+    <div className=" w-full  py-12 ">
       <div className="mx-auto w-full max-w-md">
-        <RadioGroup value={selected} onChange={setSelected}>
+        <RadioGroup value={calculationType} onChange={setCalculationType}>
           <RadioGroup.Label className="sr-only">Server size</RadioGroup.Label>
           <div className="space-y-2">
             {modelCalculationType.map((type) => (
@@ -45,7 +47,7 @@ export default function SpeedRadioGroups() {
                       ? "bg-slate-600 bg-opacity-75 text-gray-300"
                       : "bg-slate-800"
                   }
-                    relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md focus:outline-none`
+                    relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md transition delay-75  focus:outline-none`
                 }
               >
                 {({ active, checked }) => (

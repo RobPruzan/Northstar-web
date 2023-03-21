@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import {
   BarElement,
   CategoryScale,
@@ -11,12 +12,14 @@ import {
 } from "chart.js";
 
 import { faker } from "@faker-js/faker";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import BarChart from "~/components/Chart/BarChart";
 import LineChart from "~/components/Chart/LineChart";
 import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import NavBar from "~/components/NavBar";
 
+import { type Document } from "@prisma/client";
+import StatsTable from "~/components/ViewHelpers/StatsTable";
 import { TextView } from "~/components/ViewHelpers/TextView";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
@@ -66,13 +69,13 @@ export const data = {
 };
 
 const index = () => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { difficulties, setDifficulties } = useContext(DifficultiesContext);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   const { windowDifficulties, setWindowDifficulties } = useContext(
     WindowDifficultiesContext
   );
-  console.log("Hola", windowDifficulties);
+  const [selectedDocument, setSelectedDocument] = useState<Document>();
+
   return (
     <>
       <NavBar />
@@ -84,13 +87,16 @@ const index = () => {
       {/* {JSON.stringify(windowDiffic pulties)} */}
       <div className=" h-screen">
         <div className="w-full">
-          <DocumentSelections />
+          <DocumentSelections setSelectedDocument={setSelectedDocument} />
         </div>
 
         <div className="flex w-screen">
           <div className="w-1/2 border-r border-slate-500 ">
             <div className="flex h-96 flex-col ">
-              <TextView />
+              {selectedDocument && <TextView document={selectedDocument} />}
+            </div>
+            <div className="flex h-96 flex-col p-3 ">
+              <StatsTable />
             </div>
           </div>
           <div className="w-1/2">
