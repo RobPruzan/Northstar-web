@@ -47,10 +47,10 @@ const Library = ({
 
   return (
     <>
-      <div className="flex  flex-wrap p-3">
+      <div className="flex flex-wrap  justify-center p-3">
         {collectionTypeToView === "user" && <CreateCollection />}
         {paginationQuery.isLoading ? (
-          <>loading...</>
+          <></>
         ) : (
           paginationQuery.data?.map((collection) => (
             <motion.div
