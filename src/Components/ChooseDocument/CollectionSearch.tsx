@@ -52,7 +52,7 @@ export default function CollectionSearch({
   }, [searchName]);
 
   return (
-    <div className="mt-10 ">
+    <div className="mt-10 w-full">
       <Combobox value={query} onChange={setQuery}>
         <div className="relative mt-1">
           <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-gray-300 text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-300 sm:text-sm">
