@@ -17,3 +17,6 @@
 .view-selected-doc {
   cursor: pointer !important;
 }
+.translate-x-90-p {
+  transform: translateX(-90%);
+}
