@@ -28,12 +28,13 @@ const joinTokenizedWords = (tokens: string[]) => {
 };
 
 export type TextViewProps = {
-  document: Document;
+  document?: Document;
 };
 
 export const TextView = ({ document }: TextViewProps) => {
   const { windowDifficulties } = useContext(WindowDifficultiesContext);
   const { selectedDocuments } = useContext(SelectedDocumentsContext);
+  const usedDocumnt = document ?? selectedDocuments[0];
 
   // const { selectedDocuments } = useContext(SelectedDocumentsContext);
   // const text = selectedDocuments[0]?.text;
@@ -41,17 +42,17 @@ export const TextView = ({ document }: TextViewProps) => {
   // const tempText =
   //   "Hello, my name is John. I am a student at the University of Washington. I am studying computer science. I am also a TA for";
   // const tokens = word_tokenize(tempText);
-  const [tokens, setTokens] = useState(word_tokenize(document.text));
+  const [tokens, setTokens] = useState(word_tokenize(usedDocumnt?.text));
 
   const [currentWord, setCurrentWord] = useState("");
   // you're gonna need to tokenize the text
   // flex flex wrap the tokenized text, which will be in divs
   // each word should probably be it's own component, can just be a div
-  console.log("selected doc!!!", document);
+  console.log("selected doc!!!", usedDocumnt);
   console.log("tokens", tokens);
   useEffect(() => {
-    setTokens(word_tokenize(document.text));
-  }, [document.text]);
+    setTokens(word_tokenize(usedDocumnt?.text));
+  }, [usedDocumnt?.text]);
   return (
     <div
       // onBlur={(e) => {
