@@ -15,12 +15,12 @@ import { faker } from "@faker-js/faker";
 import { useContext, useState } from "react";
 import BarChart from "~/components/Chart/BarChart";
 import LineChart from "~/components/Chart/LineChart";
-import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import NavBar from "~/components/NavBar";
 
 import { type Document } from "@prisma/client";
 import StatsTable from "~/components/ViewHelpers/StatsTable";
 import { TextView } from "~/components/ViewHelpers/TextView";
+import ViewDocumentSideBar from "~/components/ViewHelpers/ViewDocumentSideBar";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 ChartJS.register(
@@ -85,23 +85,27 @@ const index = () => {
         </p>
       ))} */}
       {/* {JSON.stringify(windowDiffic pulties)} */}
-      <div className=" h-screen">
-        <div className="w-full">
-          <DocumentSelections setSelectedDocument={setSelectedDocument} />
-        </div>
+      <div className="flex h-screen w-screen">
+        <ViewDocumentSideBar />
+        <div className="p-20">
+          <TextView document={selectedDocument} />
+          {/* <div className="w-full">
+          <ViewDocumentBar />
+        </div> */}
 
-        <div className="flex w-screen">
-          <div className="w-1/2 border-r border-slate-500 ">
-            <div className="flex h-96 flex-col ">
-              {selectedDocument && <TextView document={selectedDocument} />}
+          <div className="flex w-full">
+            <div className="w-1/2 border-r border-slate-500 ">
+              <div className="flex h-96 flex-col ">
+                {selectedDocument && <TextView document={selectedDocument} />}
+              </div>
+              <div className="flex h-96 flex-col p-3 ">
+                <StatsTable />
+              </div>
             </div>
-            <div className="flex h-96 flex-col p-3 ">
-              <StatsTable />
+            <div className="w-1/2">
+              <LineChart />
+              <BarChart />
             </div>
-          </div>
-          <div className="w-1/2">
-            <LineChart />
-            <BarChart />
           </div>
         </div>
       </div>
