@@ -60,3 +60,4 @@ instance
 
 #model stuff
 pytorchBERTmodel
+model_server/pytorchBERTmodel
