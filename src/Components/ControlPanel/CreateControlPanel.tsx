@@ -96,9 +96,16 @@ const CreateControlPanel = ({
         href={"/view"}
         className="m-auto mb-5"
       >
-        <button className=" mt-auto h-fit w-fit rounded border border-slate-400 bg-slate-700 py-2 px-4 font-bold text-white transition ease-out hover:scale-105 hover:bg-slate-800">
-          Analyze
-        </button>
+        <div className=" ">
+          <button
+            onClick={() => {
+              void handleCompare();
+            }}
+            className=" h-fit w-fit rounded border border-slate-400 bg-slate-700 py-2 px-4 font-bold text-white transition ease-out hover:scale-105 hover:bg-slate-800"
+          >
+            Analyze
+          </button>
+        </div>
       </Link>
     </div>
   );

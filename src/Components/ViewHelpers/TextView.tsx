@@ -29,95 +29,88 @@ const joinTokenizedWords = (tokens: string[]) => {
 
 export type TextViewProps = {
   document?: Document;
+  analyzeDocument: Document | undefined;
 };
 
-export const TextView = ({ document }: TextViewProps) => {
+// export enum TextViewTypes {
+//   raw = "raw",
+
+//   difficulty = "difficulty",
+
+//   readability = "readability",
+
+//   diversity = "diversity",
+
+//   sentiment = "sentiment",
+// }
+
+export const TextViewTypes = [
+  "raw",
+  "difficulty",
+  "readability",
+  "diversity",
+] as const;
+
+export type TextViewType = (typeof TextViewTypes)[number];
+
+export const TextView = ({ document, analyzeDocument }: TextViewProps) => {
   const { windowDifficulties } = useContext(WindowDifficultiesContext);
   const { selectedDocuments } = useContext(SelectedDocumentsContext);
-  const usedDocumnt = document ?? selectedDocuments[0];
 
-  // const { selectedDocuments } = useContext(SelectedDocumentsContext);
-  // const text = selectedDocuments[0]?.text;
-  // const []
-  // const tempText =
-  //   "Hello, my name is John. I am a student at the University of Washington. I am studying computer science. I am also a TA for";
-  // const tokens = word_tokenize(tempText);
-  const [tokens, setTokens] = useState(word_tokenize(usedDocumnt?.text));
-
-  const [currentWord, setCurrentWord] = useState("");
-  // you're gonna need to tokenize the text
-  // flex flex wrap the tokenized text, which will be in divs
-  // each word should probably be it's own component, can just be a div
-  console.log("selected doc!!!", usedDocumnt);
+  const [tokens, setTokens] = useState(word_tokenize(analyzeDocument?.text));
+  const [selectedTextView, setSelectedTextView] = useState<TextViewType>("raw");
+  console.log("selected doc!!!", analyzeDocument);
   console.log("tokens", tokens);
   useEffect(() => {
-    setTokens(word_tokenize(usedDocumnt?.text));
-  }, [usedDocumnt?.text]);
+    setTokens(word_tokenize(analyzeDocument?.text));
+  }, [analyzeDocument?.text]);
   return (
-    <div
-      // onBlur={(e) => {
-      //   const newString = joinTokenizedWords([...tokens, currentWord]);
-      //   e.target.innerText = newString;
-      //   setTokens(word_tokenize(newString));
-      // }}
-      // onInput={(e) => {
-      //   e.preventDefault();
-      //   console.log(
-      //     tokens
-
-      //     // setTokens(word_tokenize((e.target as HTMLDivElement).innerText))
-      //   );
-      //   if ((e.nativeEvent as InputEvent | null)?.data === " ") {
-      //     // setTokens((prev) => [...prev, currentWord]);
-      //     setCurrentWord("");
-      //   } else {
-      //     setCurrentWord((prevWord) => {
-      //       // setTokens((prevTokens) => [
-      //       //   ...prevTokens,
-      //       //   ...word_tokenize(prevWord),
-      //       // ]);
-      //       return (
-      //         prevWord + ((e.nativeEvent as InputEvent | null)?.data ?? "")
-      //       );
-      //     });
-      //   }
-      //   // cancel event
-
-      //   // setTokens(word_tokenize(e,target.innerText));
-      // }}
-
-      className="flex 
-      flex-wrap overflow-y-scroll
-      rounded-md
-      border border-slate-600  bg-slate-800"
-    >
-      {/* INSTEAD, split up everything into their own letters
-          letters will be joined locally by spaces/punctuation
-          we can have some util function create a map of words in the form of
-          {index: word} e.g {0: "Hello", 1: "Hello", 2: "Hello", 3: "my", 4: "my" ...}
-          we can also store meta data form the word it's mapped to 
-          e.g {0: {word: "Hello", diff
-          iculty: 0.5, ...}}
-          then we can make 
-      */}
-      {/* {windowDifficulties[0]
-        ? windowDifficulties[0].interpretation.map(
-            (token, index) =>
-              index != tokens.length - 1 && (
-                <TokenView
-                  key={index}
-                  token={token[0]}
-                  heatMapValue={token[1]}
-                />
-              )
-          )
-        : tokens.map((token, index) => (
-            <TokenView key={index} token={token} heatMapValue={0} />
-          ))} */}
-      {tokens.map((token, index) => (
-        <TokenView key={index} token={token} heatMapValue={0} />
-      ))}
-      <div className="w-full border-t border-gray-600"></div>
+    <div className="flex h-80 w-full  flex-col items-center justify-center">
+      <div className="flex h-16 w-full rounded-t-md bg-gray-700 text-gray-300">
+        {/* <button className={`
+        
+        m-2 flex-1 rounded-md bg-sky-500 p-2 font-bold text-gray-700`}>
+          Raw Text
+        </button>
+        <button className="m-2 flex-1 rounded-md bg-gray-600 p-2">
+          Diversity
+        </button>
+        <button className="m-2 flex-1 rounded-md bg-gray-600 p-2">
+          Difficulty
+        </button>
+        <button className="m-2 flex-1 rounded-md bg-gray-600 p-2">
+          Vocabulary
+        </button> */}
+        {TextViewTypes.map((type) => (
+          <button
+            key={type}
+            onClick={() => {
+              setSelectedTextView(type);
+            }}
+            className={`
+              ${
+                selectedTextView === type
+                  ? "bg-sky-500 text-gray-700 ring-2 ring-slate-500"
+                  : "bg-gray-600 text-gray-400"
+              }
+              m-2 flex-1 rounded-md p-2 font-bold`}
+          >
+            {type.slice(0, 1).toUpperCase() + type.slice(1)}
+          </button>
+        ))}
+      </div>
+      <div
+        className="
+      flex h-full w-full
+      flex-wrap
+      overflow-y-scroll
+      rounded-b-md border  border-slate-600"
+      >
+        {tokens.map((token, index) => (
+          <TokenView key={index} token={token} heatMapValue={0} />
+        ))}
+        {/* <div className="w-full border-t border-gray-600"></div> */}
+      </div>
     </div>
   );
 };
@@ -164,8 +157,9 @@ export type TokenViewProps = {
 export const TokenView = ({ token, heatMapValue }: TokenViewProps) => {
   return (
     <div
+      // ${valueToHeatmap(heatMapValue)}
       className={`
-      ${valueToHeatmap(heatMapValue)}
+     
   w-fit
  cursor-pointer p-1 font-semibold text-slate-400 transition hover:scale-105 hover:text-slate-500`}
     >

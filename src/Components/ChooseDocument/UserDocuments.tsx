@@ -30,13 +30,6 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
         <>loading...</>
       ) : (
         documentsQuery.data?.map((document) => (
-          // <DocumentCard
-          //   key={document.id}
-          //   difficulty={0}
-          //   diversity={0}
-          //   text_length={0}
-          //   documentId={document.id}
-          // />
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 1 }}
@@ -47,8 +40,6 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
             key={document.id}
             className="relative mt-5 flex h-24 w-72 flex-col items-center justify-center   rounded-md  border border-slate-500  bg-slate-800 py-1 px-3 font-semibold shadow-lg hover:shadow-lg"
           >
-            {/* <Example /> */}
-
             <p
               onClick={(event) =>
                 event.target === event.currentTarget &&
