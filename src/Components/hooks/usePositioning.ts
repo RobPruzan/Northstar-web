@@ -23,7 +23,7 @@ export default function usePositioning(
         if (rect.bottom > viewportHeight) {
           top -= rect.bottom - viewportHeight;
         }
-        console.log("bottom vs viewport", rect.bottom, viewportHeight);
+
 
         setPosition({ top, left });
       }

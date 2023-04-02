@@ -129,7 +129,7 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
         return doc;
       }
     });
-    console.log("filteredDocuments", filteredDocuments, document.id);
+
     setDocuments(filteredDocuments);
   };
   const createDocumentMutation = api.collection.create.useMutation({
@@ -139,6 +139,9 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
       );
       await queryClient.invalidateQueries(
         getQueryKey(api.pagination.getTotalPages)
+      );
+      await queryClient.invalidateQueries(
+        getQueryKey(api.collection.searchQuery)
       );
       handleClose();
     },
@@ -156,14 +159,14 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
   return (
     <motion.div
       // onClick={handleClose}
-      className="backdrop fixed top-0 left-0 z-40 flex  h-screen w-screen items-center justify-center  bg-black bg-opacity-30 "
+      className="backdrop fixed top-0 left-0 z-40 flex h-screen w-screen  items-center justify-center   bg-black bg-opacity-30 "
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div
         onClick={(e) => e.stopPropagation()}
-        className="modal orange-gradient h-4/5 w-4/5 rounded-sm bg-slate-700 shadow-xl"
+        className="modal orange-gradient h-4/5 w-4/5 rounded-sm border border-slate-700 bg-slate-800 shadow-xl"
         variants={dropIn}
         initial="hidden"
         animate="visible"
@@ -193,7 +196,6 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                 //   }));
                 // }}
                 onChange={(event) => {
-                  console.log(creationDocument.active);
                   if (creationDocument.active) {
                     setCreationDocument((prev) => ({
                       ...prev,
@@ -224,7 +226,7 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                 }
                 type="text"
                 placeholder="Document Title"
-                className="m-2 rounded bg-gray-200 p-2 text-lg text-gray-600 outline-none"
+                className="m-2 rounded bg-gray-300 p-2 text-lg text-gray-600 outline-none"
               />
               <textarea
                 value={
@@ -265,7 +267,7 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                   //   text: event.target.value,
                   // }));
                 }}
-                className="m-2 h-5/6 rounded bg-gray-200 p-2 text-lg text-gray-600 outline-none"
+                className="m-2 h-5/6 rounded bg-gray-300 p-2 text-lg text-gray-600 outline-none"
               />
             </div>
             <div className="flex h-full w-2/6 flex-col items-center  ">
@@ -277,26 +279,27 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                   setCollectionTitle(event.target.value);
                 }}
               />
-              <div className="flex  h-96 w-full flex-col overflow-y-scroll rounded-md border border-slate-500">
-                <button
-                  onClick={() => {
-                    setCurrentDocument(creationDocument);
-                    setCreationDocument((prev) => ({ ...prev, active: true }));
-                  }}
-                  className={`
-                 ${creationDocument.active ? "bg-sky-600" : ""}
-                  relative m-2 flex h-10 flex-col break-words rounded-md bg-sky-800 p-2 text-gray-200 transition  hover:scale-105`}
-                >
-                  {creationDocument.title}
-                </button>
-
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setCurrentDocument(creationDocument);
+                  setCreationDocument((prev) => ({ ...prev, active: true }));
+                }}
+                className={`
+                 ${creationDocument.active ? "bg-sky-600 " : ""}
+                  relative m-2  h-10 w-full flex-col break-words rounded-md bg-sky-800  p-2 text-gray-300 transition  hover:border hover:border-slate-400 `}
+              >
+                {creationDocument.title}
+              </motion.button>
+              <div className="mb-2  flex h-96 w-full flex-col overflow-y-scroll rounded-md border border-slate-500 text-center">
+                <p className="border-b border-b-slate-300 p-3 font-semibold text-gray-300">
+                  {" "}
+                  Current Documents
+                </p>
                 {documents.map((document, index) => (
                   <button
                     onClick={() => {
-                      console.log(
-                        "Document that is being set to current: ",
-                        document
-                      );
                       setCurrentDocument(document);
                       setCreationDocument((prev) => ({
                         ...prev,
@@ -332,9 +335,9 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
           </div>
           <div className="margin-top-auto flex w-full justify-evenly">
             <motion.button
-              onClick={handleClose}
               whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 1 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleClose}
               className="m-2 w-2/5 rounded-md bg-slate-500 p-2 font-semibold text-white shadow-md transition ease-in-out hover:text-slate-200 "
             >
               Close
@@ -342,11 +345,13 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
 
             <motion.button
               whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 1 }}
+              whileTap={{ scale: 0.98 }}
               // onClick={() => {
               //   createDocumentMutation.mutate(document);
               //   handleClose();
               // }}
+
+              disabled={documents.length === 0 || collectionTitle === ""}
               onClick={() => {
                 createDocumentMutation.mutate({
                   documents,
@@ -354,7 +359,13 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                   type: TextTypeEnum.user,
                 });
               }}
-              className="m-2 w-2/5 rounded-md bg-sky-800 p-2 font-semibold text-white shadow-md transition ease-in-out hover:text-slate-200 "
+              className={`
+              ${
+                documents.length === 0 || collectionTitle === ""
+                  ? "cursor-default "
+                  : ""
+              }
+              m-2 w-2/5 rounded-md bg-sky-800 p-2 font-semibold text-white shadow-md transition ease-in-out hover:text-slate-200 `}
             >
               Save
             </motion.button>

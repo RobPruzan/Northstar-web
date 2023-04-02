@@ -9,6 +9,23 @@ export const collectionRouter = createTRPCRouter({
       },
     });
   }),
+  searchQuery: protectedProcedure
+    .input(z.object({ name: z.string().optional() }))
+    .query(({ ctx, input }) => {
+      return ctx.prisma.collection.findMany({
+        where: {
+          name: {
+            
+            contains: input.name,
+          },
+        },
+        select: {
+          name: true,
+          type: true,
+        },
+        take: 20,
+      });
+    }),
   create: protectedProcedure
     .input(
       z.object({

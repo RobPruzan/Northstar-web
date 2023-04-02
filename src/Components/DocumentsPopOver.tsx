@@ -8,7 +8,6 @@ import { BsSearch } from "react-icons/bs";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { setSelectedDocumentsUniquely } from "./ChooseDocument/UserDocuments";
 import DocumentCard from "./DocumentCard";
-import usePositioning from "./hooks/usePositioning";
 export type Props = { documents: Document[] };
 
 export const DocumentsPopOver = ({ documents }: Props) => {
@@ -19,7 +18,7 @@ export const DocumentsPopOver = ({ documents }: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const popoverRef = useRef<HTMLDivElement>(null);
-  const { top, left } = usePositioning(popoverRef, open);
+
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -71,12 +70,7 @@ export const DocumentsPopOver = ({ documents }: Props) => {
                 }}
                 whileTap={{ scale: 1 }}
               >
-                <DocumentCard
-                  difficulty={document.difficulty}
-                  // diversity={document.diversity}
-                  text_length={document.text.length}
-                  documentId={document.id}
-                />
+                <DocumentCard cursor="default" document={document} />
               </motion.button>
             </div>
           ))}
@@ -88,7 +82,7 @@ export const DocumentsPopOver = ({ documents }: Props) => {
 
 //
 
-const StyledMenu = styled((props: MenuProps) => (
+export const StyledMenu = styled((props: MenuProps) => (
   <Menu
     elevation={0}
     anchorOrigin={{

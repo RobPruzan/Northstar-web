@@ -40,3 +40,26 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+
+# python stuff
+env
+venv
+__pycache__
+*.pyc
+*.pyo
+
+# flask stuff
+instance
+.webassets-cache
+
+# django stuff
+*.log
+*.pot
+*.pyc
+
+#model stuff
+pytorchBERTmodel
+model_server/pytorchBERTmodel
+/Users/robby/Literacy-Assessment/northstar/model_server/pytorchBERTmodel
+/Users/robby/Literacy-Assessment/northstar/model_server/balanced_synonym_data.json

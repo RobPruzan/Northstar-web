@@ -1,4 +1,11 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { motion } from "framer-motion";
+import {
+  useContext,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { QueryContext } from "~/Context/QueryContext";
 import { api } from "~/utils/api";
 import { DocumentsPopOver } from "../DocumentsPopOver";
 import CreateCollection from "./CreateCollection";
@@ -19,6 +26,7 @@ const Library = ({
   const [enabled, setEnabled] = useState(false);
   // const collectionQuery = api.collection.getAll.useQuery();
   const [currentPage, setCurrentPage] = useState(1);
+  const { searchName } = useContext(QueryContext);
 
   const paginationQuery = api.pagination.getContent.useQuery(
     {
@@ -28,21 +36,27 @@ const Library = ({
           : USER_PAGINATION_PAGE_SIZE,
       page: currentPage,
       type: collectionTypeToView ?? "library",
+      searchName: searchName,
     },
     {
       enabled: currentPage > 0 && collectionTypeToView !== undefined,
     }
   );
 
+  console.log(paginationQuery.data);
+
   return (
     <>
-      <div className="flex  flex-wrap p-3">
+      <div className="flex flex-wrap  justify-center p-3">
         {collectionTypeToView === "user" && <CreateCollection />}
         {paginationQuery.isLoading ? (
-          <>loading...</>
+          <></>
         ) : (
           paginationQuery.data?.map((collection) => (
-            <div
+            <motion.div
+              // eases in when mounted
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               key={collection.id}
               className=" m-2 flex h-36  w-56 flex-col justify-evenly rounded-md border border-slate-500 bg-slate-700 p-2 shadow-md"
             >
@@ -50,7 +64,7 @@ const Library = ({
                 {collection.name}
               </p>
               <DocumentsPopOver documents={collection.Documents} />
-            </div>
+            </motion.div>
           ))
         )}
 

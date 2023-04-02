@@ -6,14 +6,16 @@ import {
   type SetStateAction,
 } from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
+
+import CollectionSearch from "../ChooseDocument/CollectionSearch";
 import CollectionTypeTabs from "../ChooseDocument/CollectionTypeTabs";
-import { useGetDifficultyScore } from "../modelConnection";
+import { useGetDifficultyScore } from "../hooks/useGetDifficultyScore";
+import { useGetWindowScores } from "../hooks/useGetWindowScores";
+import SpeedRadioGroups from "./SpeedRadioGroups";
 export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
-  setCollectionTypeToView: Dispatch<
-    SetStateAction<"user" | "library" | undefined>
-  >;
-  collectionTypeToView: "user" | "library" | undefined;
+  setCollectionTypeToView: Dispatch<SetStateAction<CollectionType | undefined>>;
+  collectionTypeToView: CollectionType | undefined;
 };
 const CreateControlPanel = ({
   collectionTypeToView,
@@ -22,48 +24,88 @@ const CreateControlPanel = ({
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
-  const [difficulties, setDifficulties] = useState<number[]>([]);
+  const [value, setValue] = useState(50);
+
   const difficultyMutation = useGetDifficultyScore();
+  const windowDifficultyMutation = useGetWindowScores();
   const handleCompare = () => {
-    selectedDocuments.forEach((doc) => {
-      difficultyMutation.mutate(
-        {
-          text: doc.text,
-        },
-        {
-          onSuccess: (data) => {
-            if (data.success) {
-              setDifficulties((prev) => [...prev, data.data.difficulty]);
-            }
-          },
-        }
-      );
-    });
+    for (const doc of selectedDocuments) {
+      difficultyMutation.mutate({
+        text: doc.text,
+      });
+      windowDifficultyMutation.mutate({
+        text: doc.text,
+      });
+    }
+
     // difficultyMutation.mutate({
     //   text
     // })
   };
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col overflow-y-scroll">
       <div className=" flex h-full w-full flex-col items-center p-2 ">
         <CollectionTypeTabs
           collectionTypeToView={collectionTypeToView}
           setCollectionTypeToView={setCollectionTypeToView}
         />
-        {/* <CollectionComboBox /> */}
-        {difficulties.map((difficulty) => (
-          <p key={difficulty} className="text-xl font-bold text-gray-300">
-            {difficulty}
-          </p>
-        ))}
+        <CollectionSearch
+          collectionTypeToView={collectionTypeToView}
+          setCollectionTypeToView={setCollectionTypeToView}
+        />
+        {/* <div className="mt-20 w-full text-center">
+          <label
+            htmlFor="customRange1"
+            className=" font-semibold text-gray-200"
+          >
+            <p className="float-left text-gray-400">Window step-size</p>
+            <p className="float-right font-bold">{value}</p>
+          </label>
+          <input
+            id="customRange1"
+            step={1}
+            type="range"
+            min="0"
+            max="50"
+            value={value}
+            className="
+          mt-4
+
+
+            w-full
+            appearance-none
+            rounded-md
+            bg-slate-800
+            accent-blue-800
+            outline-none
+
+            
+            
+            
+            
+            hover:accent-blue-700"
+            onChange={(e) => setValue(parseInt(e.target.value))}
+          />
+        </div> */}
+        <SpeedRadioGroups />
       </div>
-      <Link href={"/view"} className="m-auto mb-5">
-        <button
-          onClick={handleCompare}
-          className=" mt-64 h-fit w-fit rounded border border-slate-400 bg-slate-700 py-2 px-4 font-bold text-white transition ease-out hover:scale-105 hover:bg-slate-800"
-        >
-          Compare
-        </button>
+      <Link
+        onClick={() => {
+          void handleCompare();
+        }}
+        href={"/view"}
+        className="m-auto mb-5"
+      >
+        <div className=" ">
+          <button
+            onClick={() => {
+              void handleCompare();
+            }}
+            className=" h-fit w-fit rounded border border-slate-400 bg-slate-700 py-2 px-4 font-bold text-white transition ease-out hover:scale-105 hover:bg-slate-800"
+          >
+            Analyze
+          </button>
+        </div>
       </Link>
     </div>
   );

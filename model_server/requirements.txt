@@ -1,0 +1,17 @@
+transformers
+fuzzywuzzy
+readability
+python-Levenshtein
+pandas
+nltk
+numpy
+torch
+gensim
+scikit-learn
+seaborn
+matplotlib
+print-color
+pyspellchecker
+bertopic
+umap-learn
+hdbscan

@@ -1,7 +1,6 @@
 import { type Document } from "@prisma/client";
 import { motion } from "framer-motion";
 import { type Dispatch, type SetStateAction } from "react";
-import { BsX } from "react-icons/bs";
 import { api } from "~/utils/api";
 import useDeleteDocument from "../hooks/useDeleteDocument";
 
@@ -31,13 +30,6 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
         <>loading...</>
       ) : (
         documentsQuery.data?.map((document) => (
-          // <DocumentCard
-          //   key={document.id}
-          //   difficulty={0}
-          //   diversity={0}
-          //   text_length={0}
-          //   documentId={document.id}
-          // />
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 1 }}
@@ -48,9 +40,16 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
             key={document.id}
             className="relative mt-5 flex h-24 w-72 flex-col items-center justify-center   rounded-md  border border-slate-500  bg-slate-800 py-1 px-3 font-semibold shadow-lg hover:shadow-lg"
           >
-            <p className="text-2xl font-semibold text-slate-400">
+            <p
+              onClick={(event) =>
+                event.target === event.currentTarget &&
+                setSelectedDocumentsUniquely(setSelectedDocuments, document)
+              }
+              className="text-2xl font-semibold text-slate-400"
+            >
               {document.title}
             </p>
+            {/* 
             <BsX
               onClick={() =>
                 documentMutation.mutate({
@@ -61,7 +60,7 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
               size={30}
               className="absolute top-0 right-0  cursor-pointer fill-red-500 hover:scale-110  hover:fill-red-700 "
               fontSize="medium"
-            />
+            /> */}
             {/* <BsPlus
               onClick={() =>
                 setSelectedDocuments((prev) => [...prev, document])

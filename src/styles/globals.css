@@ -13,3 +13,10 @@
 ::-webkit-scrollbar-track-piece {
   background-color: #000000;
 }
+
+.view-selected-doc {
+  cursor: pointer !important;
+}
+.translate-x-90-p {
+  transform: translateX(-90%);
+}

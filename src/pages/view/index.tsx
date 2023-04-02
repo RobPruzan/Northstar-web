@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import {
+  BarElement,
   CategoryScale,
   Chart as ChartJS,
   Legend,
@@ -10,10 +12,17 @@ import {
 } from "chart.js";
 
 import { faker } from "@faker-js/faker";
-import { useContext } from "react";
-import { Line } from "react-chartjs-2";
+import { useContext, useState } from "react";
 import NavBar from "~/components/NavBar";
+
+import { type Document } from "@prisma/client";
+import BarChart from "~/components/Chart/BarChart";
+import LineChart from "~/components/Chart/LineChart";
+import { TextView } from "~/components/ViewHelpers/TextView";
+import ViewDocumentSideBar from "~/components/ViewHelpers/ViewDocumentSideBar";
+import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
+import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,7 +30,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarElement
 );
 
 export const options = {
@@ -35,6 +45,7 @@ export const options = {
       text: "Chart.js Line Chart",
     },
   },
+  maintainAspectRatio: false,
 };
 
 const labels = ["January", "February", "March", "April", "May", "June", "July"];
@@ -44,40 +55,130 @@ export const data = {
   datasets: [
     {
       label: "Dataset 1",
-      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+      data: labels.map(() => faker.datatype.number({ min: -50, max: 50 })),
       borderColor: "rgb(255, 99, 132)",
       backgroundColor: "rgba(255, 99, 132, 0.5)",
     },
     {
       label: "Dataset 2",
-      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+      data: labels.map(() => faker.datatype.number({ min: -50, max: 50 })),
       borderColor: "rgb(53, 162, 235)",
       backgroundColor: "rgba(53, 162, 235, 0.5)",
     },
   ],
 };
-const SomeComponent = () => {
-  const { selectedDocuments, setSelectedDocuments } = useContext(
-    SelectedDocumentsContext
-  );
-  return (
-    <div>
-      {selectedDocuments.map((doc) => (
-        <div key={doc.id}>
-          <p>{doc.text}</p>
-          <p>{doc.id}</p>
-        </div>
-      ))}
-    </div>
-  );
-};
+
+const fakeTextStats = [
+  {
+    diversity: 0.5,
+    difficulty: 0.5,
+    readability: 0.5,
+    sentiment: 0.5,
+  },
+
+  {
+    diversity: 0.5,
+    difficulty: 0.5,
+    readability: 0.5,
+    sentiment: 0.5,
+  },
+  {
+    diversity: 0.5,
+    difficulty: 0.5,
+    readability: 0.5,
+    sentiment: 0.5,
+  },
+  {
+    diversity: 0.5,
+    difficulty: 0.5,
+    readability: 0.5,
+    sentiment: 0.5,
+  },
+  {
+    diversity: 0.5,
+    difficulty: 0.5,
+    readability: 0.5,
+    sentiment: 0.5,
+  },
+  {
+    diversity: 0.5,
+    difficulty: 0.5,
+    readability: 0.5,
+    sentiment: 0.5,
+  },
+];
 
 const index = () => {
+  const { selectedDocuments } = useContext(SelectedDocumentsContext);
+  const { difficulties, setDifficulties } = useContext(DifficultiesContext);
+
+  const { windowDifficulties, setWindowDifficulties } = useContext(
+    WindowDifficultiesContext
+  );
+  const [analyzeDocument, setAnalyzeDocument] = useState<Document | undefined>(
+    selectedDocuments.length > 0 ? selectedDocuments[0] : undefined
+  );
+
   return (
     <>
       <NavBar />
-      <SomeComponent />
-      <Line options={options} data={data} />
+      <div
+        style={{
+          backgroundColor: "#141621",
+        }}
+        className="flex h-screen w-screen overflow-y-scroll "
+      >
+        <ViewDocumentSideBar
+          analyzeDocument={analyzeDocument}
+          setAnalyzeDocument={setAnalyzeDocument}
+        />
+        <div className="p-7">
+          <div className="flex w-full flex-wrap justify-between  rounded-md px-3">
+            {fakeTextStats.map((stat) => (
+              <div
+                key={stat.difficulty}
+                className="m-2 flex  h-44 w-72 flex-col rounded-lg bg-gray-700 p-4 shadow-lg"
+              >
+                <p className="text-xl font-bold text-gray-300">
+                  Difficulty: {stat.difficulty}
+                </p>
+                <p className="text-xl font-bold text-gray-300">
+                  Readability: {stat.readability}
+                </p>
+                <p className="text-xl font-bold text-gray-300">
+                  Diversity: {stat.diversity}
+                </p>
+                <p className="text-xl font-bold text-gray-300">
+                  Sentiment: {stat.sentiment}
+                </p>
+
+                <div className="mt-auto h-3 w-full rounded-2xl bg-sky-500" />
+              </div>
+            ))}
+
+            {/* <div className="w-1/2 border-r border-slate-500 ">
+              <div className="flex h-96 flex-col ">
+                {selectedDocument && <TextView document={selectedDocument} />}
+              </div>
+              <div className="flex h-96 flex-col p-3 ">
+                <StatsTable />
+              </div>
+            </div>
+            <div className="w-1/2">
+           
+            </div> */}
+          </div>
+          <div className="w-full px-5">
+            <div className="flex h-full w-full justify-center rounded-md py-4">
+              <TextView analyzeDocument={analyzeDocument} />
+            </div>
+          </div>
+          <div className="relative w-full px-5">
+            <LineChart />
+            <BarChart />
+          </div>
+        </div>
+      </div>
     </>
   );
 };
