@@ -1,4 +1,5 @@
 import { type Document } from "@prisma/client";
+import { AnimatePresence, motion } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
@@ -106,7 +107,7 @@ export const TextView = ({ document, analyzeDocument }: TextViewProps) => {
       overflow-y-scroll
       rounded-b-md border  border-slate-600"
       >
-        {tokens.map((token, index) => (
+        {["hello", "my", "name", "is", "frank"].map((token, index) => (
           <TokenView key={index} token={token} heatMapValue={0} />
         ))}
         {/* <div className="w-full border-t border-gray-600"></div> */}
@@ -155,15 +156,61 @@ export type TokenViewProps = {
 };
 
 export const TokenView = ({ token, heatMapValue }: TokenViewProps) => {
+  const [showMenu, setShowMenu] = useState(false);
+  // need to have a menu popup on hover
+  // the classes will be absolute transform-y-50 h-30 w-30 overflow-y-scroll
+  // it will need to be kinda like a modal, you should be able to click outside of it to close it
+  // that also means you cannot scroll the text view while the menu is open
   return (
-    <div
+    <motion.div
+      onMouseEnter={() => {
+        setShowMenu(true);
+      }}
+      onMouseLeave={() => {
+        setShowMenu(false);
+      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
       // ${valueToHeatmap(heatMapValue)}
       className={`
+     relative
      
-  w-fit
- cursor-pointer p-1 font-semibold text-slate-400 transition hover:scale-105 hover:text-slate-500`}
+  h-fit
+ w-fit cursor-pointer p-1 font-semibold text-slate-400 transition hover:scale-105 hover:text-slate-500`}
     >
       {token}
-    </div>
+      <TokenMenu showMenu={showMenu} />
+    </motion.div>
   );
 };
+export type TokenMenuProps = {
+  showMenu: boolean;
+};
+export function TokenMenu({ showMenu }: TokenMenuProps) {
+  return (
+    <AnimatePresence>
+      {showMenu && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className=" absolute z-50  h-32 w-32
+          translate-x-7 -translate-y-60
+          overflow-y-scroll bg-white"
+        >
+          {/* <div className="w-full border-t border-gray-600"></div> */}
+        </motion.div>
+      )}
+    </AnimatePresence>
+    // <motion.div
+    //   initial={{ opacity: 0 }}
+    //   animate={{ opacity: 1 }}
+    //   transition={{ duration: 0.5 }}
+    //   exit={{ opacity: 0 }}
+    //   className=" absolute z-50  h-32 w-32  overflow-y-scroll bg-white"
+    // >
+    //   {/* <div className="w-full border-t border-gray-600"></div> */}
+    // </motion.div>
+  );
+}

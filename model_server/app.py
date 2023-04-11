@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
-from main import reading_difficulty, sliding_window
+# import main
+import functions
 
 
 app = Flask(__name__)
@@ -42,7 +43,7 @@ def get_difficulty():
     if text == None:
         return jsonify({"error": "No text found"}), 400
     # print(text)
-    response = {"difficulty": reading_difficulty(text)}
+    response = {"difficulty": functions.reading_difficulty(text)}
     print(response)
 
     return jsonify(response)
@@ -53,9 +54,19 @@ def get_sliding_window_difficulty():
     text = request.json.get("text")
     if text == None:
         return jsonify({"error": "No text found"}), 400
-    response = sliding_window(text)
+    response = functions.sliding_window(text)
     print("The response is", response)
     return jsonify(response)
+
+
+@app.route("/api/stats", methods=["POST"])
+def get_stats():
+    texts = request.json.get("text")
+    if not texts:
+        return jsonify({"error": "No text found"}), 400
+    stats = functions.docs_to_answer(texts)
+    # shape: {'text': [], 'difficulty': [], 'diversity_per_topic': [], 'overall_diversity': [], 'diversity_per_difficulty': [], 'sentiment': []}
+    return jsonify(stats)
 
 
 if __name__ == "__main__":

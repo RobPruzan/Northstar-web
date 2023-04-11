@@ -15,3 +15,7 @@ pyspellchecker
 bertopic
 umap-learn
 hdbscan
+bertopic
+hdbscan
+sentence_transformers
+umap-learn

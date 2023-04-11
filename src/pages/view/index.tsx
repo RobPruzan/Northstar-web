@@ -132,12 +132,12 @@ const index = () => {
           analyzeDocument={analyzeDocument}
           setAnalyzeDocument={setAnalyzeDocument}
         />
-        <div className="p-7">
+        <div className="overflow-hidden p-7">
           <div className="flex w-full flex-wrap justify-between  rounded-md px-3">
             {fakeTextStats.map((stat) => (
               <div
                 key={stat.difficulty}
-                className="m-2 flex  h-44 w-72 flex-col rounded-lg bg-gray-700 p-4 shadow-lg"
+                className="m-2 flex  h-44 w-72 flex-col rounded-lg bg-gray-700 p-4 shadow-lg ring-white  hover:ring-2"
               >
                 <p className="text-xl font-bold text-gray-300">
                   Difficulty: {stat.difficulty}

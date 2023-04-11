@@ -12,11 +12,24 @@ import CollectionTypeTabs from "../ChooseDocument/CollectionTypeTabs";
 import { useGetDifficultyScore } from "../hooks/useGetDifficultyScore";
 import { useGetWindowScores } from "../hooks/useGetWindowScores";
 import SpeedRadioGroups from "./SpeedRadioGroups";
+import { useMutation } from "@tanstack/react-query";
 export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
   setCollectionTypeToView: Dispatch<SetStateAction<CollectionType | undefined>>;
   collectionTypeToView: CollectionType | undefined;
 };
+
+// shape of stats
+// # shape: {'text': [], 'difficulty': [], 'diversity_per_topic': [], 'overall_diversity': [], 'diversity_per_difficulty': [], 'sentiment': []}
+type Stats = {
+  text: string[];
+  difficulty: number[];
+  diversity_per_topic: number[];
+  overall_diversity: number[];
+  diversity_per_difficulty: number[];
+  sentiment: number[];
+};
+
 const CreateControlPanel = ({
   collectionTypeToView,
   setCollectionTypeToView,
@@ -28,15 +41,32 @@ const CreateControlPanel = ({
 
   const difficultyMutation = useGetDifficultyScore();
   const windowDifficultyMutation = useGetWindowScores();
+
+  const statsMutation = useMutation(() => {
+    const url = process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL
+      ? `${process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL}/difficulty`
+      : "";
+
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: selectedDocuments.map((doc) => doc.text),
+      }),
+    }).then((res) => res.json());
+  });
   const handleCompare = () => {
-    for (const doc of selectedDocuments) {
-      difficultyMutation.mutate({
-        text: doc.text,
-      });
-      windowDifficultyMutation.mutate({
-        text: doc.text,
-      });
-    }
+    // for (const doc of selectedDocuments) {
+    //   difficultyMutation.mutate({
+    //     text: doc.text,
+    //   });
+    //   windowDifficultyMutation.mutate({
+    //     text: doc.text,
+    //   });
+    // }
+    statsMutation.mutate();
 
     // difficultyMutation.mutate({
     //   text
