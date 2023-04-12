@@ -13,6 +13,7 @@ import { useGetDifficultyScore } from "../hooks/useGetDifficultyScore";
 import { useGetWindowScores } from "../hooks/useGetWindowScores";
 import SpeedRadioGroups from "./SpeedRadioGroups";
 import { useMutation } from "@tanstack/react-query";
+import { StatsContext, statsSchema } from "~/Context/StatsContext";
 export type CollectionType = "user" | "library";
 export type CreateControlPanelProps = {
   setCollectionTypeToView: Dispatch<SetStateAction<CollectionType | undefined>>;
@@ -21,14 +22,6 @@ export type CreateControlPanelProps = {
 
 // shape of stats
 // # shape: {'text': [], 'difficulty': [], 'diversity_per_topic': [], 'overall_diversity': [], 'diversity_per_difficulty': [], 'sentiment': []}
-type Stats = {
-  text: string[];
-  difficulty: number[];
-  diversity_per_topic: number[];
-  overall_diversity: number[];
-  diversity_per_difficulty: number[];
-  sentiment: number[];
-};
 
 const CreateControlPanel = ({
   collectionTypeToView,
@@ -37,26 +30,34 @@ const CreateControlPanel = ({
   const { selectedDocuments, setSelectedDocuments } = useContext(
     SelectedDocumentsContext
   );
-  const [value, setValue] = useState(50);
 
+  const [value, setValue] = useState(50);
+  const { stats, setStats } = useContext(StatsContext);
   const difficultyMutation = useGetDifficultyScore();
   const windowDifficultyMutation = useGetWindowScores();
 
-  const statsMutation = useMutation(() => {
-    const url = process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL
-      ? `${process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL}/difficulty`
-      : "";
+  const statsMutation = useMutation(
+    () => {
+      const url = process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL
+        ? `${process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL}/stats`
+        : "";
 
-    return fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+      return fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          texts: selectedDocuments.map((doc) => doc.text),
+        }),
+      }).then((res) => statsSchema.parse(res.json()));
+    },
+    {
+      onSuccess: (data) => {
+        setStats(data);
       },
-      body: JSON.stringify({
-        text: selectedDocuments.map((doc) => doc.text),
-      }),
-    }).then((res) => res.json());
-  });
+    }
+  );
   const handleCompare = () => {
     // for (const doc of selectedDocuments) {
     //   difficultyMutation.mutate({
@@ -83,40 +84,6 @@ const CreateControlPanel = ({
           collectionTypeToView={collectionTypeToView}
           setCollectionTypeToView={setCollectionTypeToView}
         />
-        {/* <div className="mt-20 w-full text-center">
-          <label
-            htmlFor="customRange1"
-            className=" font-semibold text-gray-200"
-          >
-            <p className="float-left text-gray-400">Window step-size</p>
-            <p className="float-right font-bold">{value}</p>
-          </label>
-          <input
-            id="customRange1"
-            step={1}
-            type="range"
-            min="0"
-            max="50"
-            value={value}
-            className="
-          mt-4
-
-
-            w-full
-            appearance-none
-            rounded-md
-            bg-slate-800
-            accent-blue-800
-            outline-none
-
-            
-            
-            
-            
-            hover:accent-blue-700"
-            onChange={(e) => setValue(parseInt(e.target.value))}
-          />
-        </div> */}
         <SpeedRadioGroups />
       </div>
       <Link

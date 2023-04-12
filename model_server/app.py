@@ -3,6 +3,9 @@ from flask_cors import CORS, cross_origin
 
 # import main
 import functions
+import faulthandler
+
+faulthandler.enable()
 
 
 app = Flask(__name__)
@@ -61,7 +64,7 @@ def get_sliding_window_difficulty():
 
 @app.route("/api/stats", methods=["POST"])
 def get_stats():
-    texts = request.json.get("text")
+    texts = request.json.get("texts")
     if not texts:
         return jsonify({"error": "No text found"}), 400
     stats = functions.docs_to_answer(texts)
@@ -70,4 +73,4 @@ def get_stats():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, threaded=False, processes=1)

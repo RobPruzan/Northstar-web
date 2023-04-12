@@ -48,12 +48,22 @@ from transformers import pipeline
 from transformers import BertTokenizer
 from transformers import AutoTokenizer, BertForSequenceClassification
 
-topic_model = BERTopic.load("bertopic_20newsgroups")
+topic_model = BERTopic.load("colab_topic_model")
 
 nltk.download("stopwords")
 
 tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
 device = torch.device("cuda" if torch.cuda.is_available else "cpu")
+import pickle
+import io
+
+
+class CPU_Unpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if module == "torch.storage" and name == "_load_from_bytes":
+            return lambda b: torch.load(io.BytesIO(b), map_location="cpu")
+        else:
+            return super().find_class(module, name)
 
 
 # loading model
@@ -287,7 +297,6 @@ def sliding_window(text):
         if idx % step == 0:
             if idx <= len(words) - 26:
                 x = " ".join(words[idx : idx + 25])
-                # print(x)
                 throw_away = []
                 score = 0
                 for idx, i in enumerate(range(idx, idx + 25)):
@@ -372,10 +381,12 @@ def text_to_diversity_per_topic(text, diversity_function, n):
     split_by_n_tokenized_text = []
     temp_words = []
     for idx, word in enumerate(word_tokenized_text):
-        if idx % n == 0:
+        if idx % n == 0 and idx != 0:
             split_by_n_tokenized_text.append(" ".join(temp_words))
+            temp_words = []
         else:
             temp_words.append(word)
+
     window_to_sentence = {}
     for idx, i in enumerate(split_by_n_tokenized_text):
         topic_for_sentence = get_representative_topic_words(i)
@@ -456,19 +467,16 @@ def docs_to_answer(docs: List[str]):
         "diversity_per_difficulty": [],
         "sentiment": [],
     }
-
     # iterate over documents and calculate statistics
     for doc in docs:
         # get text, difficulty, and diversity scores
         text = doc
         difficulty = better_predict(text)
-        print(data)
         diversity_per_topic, overall_diversity = text_to_diversity_per_topic(
             text, mtld, 5
         )
-        print(data)
+
         diversity_per_difficulty = text_to_diversity_per_difficulty(text, mtld)
-        print(data)
 
         # calculate sentiment score
         sentences = sent_tokenize(text)

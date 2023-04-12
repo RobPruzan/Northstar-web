@@ -23,6 +23,8 @@ import ViewDocumentSideBar from "~/components/ViewHelpers/ViewDocumentSideBar";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
+import { StatsContext } from "~/Context/StatsContext";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -118,7 +120,8 @@ const index = () => {
   const [analyzeDocument, setAnalyzeDocument] = useState<Document | undefined>(
     selectedDocuments.length > 0 ? selectedDocuments[0] : undefined
   );
-
+  const { stats, setStats } = useContext(StatsContext);
+  console.log("stats", stats);
   return (
     <>
       <NavBar />

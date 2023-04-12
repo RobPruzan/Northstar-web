@@ -63,3 +63,4 @@ pytorchBERTmodel
 model_server/pytorchBERTmodel
 /Users/robby/Literacy-Assessment/northstar/model_server/pytorchBERTmodel
 /Users/robby/Literacy-Assessment/northstar/model_server/balanced_synonym_data.json
+model_server/colab_topic_model

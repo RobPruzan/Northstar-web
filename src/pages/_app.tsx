@@ -5,7 +5,7 @@ import { type AppType } from "next/app";
 
 import { api } from "~/utils/api";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { type WindowDifficulty } from "~/components/hooks/useGetWindowScores";
 import { DifficultiesContext } from "~/Context/DifficultiesContext";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
@@ -20,10 +20,15 @@ const MyApp: AppType<{ session: Session | null }> = ({
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
   const [stats, setStats] = useState<Stats>({
     difficulty: [],
+    diversity_per_difficulty: [],
+    diversity_per_topic: [],
+    overall_diversity: [],
+    sentiment: [],
   });
   const [windowDifficulties, setWindowDifficulties] = useState<
     WindowDifficulty[]
   >([]);
+
   const [difficulties, setDifficulties] = useState<number[]>([]);
 
   return (
