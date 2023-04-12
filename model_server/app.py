@@ -62,6 +62,30 @@ def get_sliding_window_difficulty():
     return jsonify(response)
 
 
+def transform_stats(stats: dict) -> list:
+    num_documents = len(stats["difficulty"])
+
+    transformed_stats = []
+    for i in range(num_documents):
+        transformed_stats.append(
+            {
+                "difficulty": stats["difficulty"][i],
+                "diversity_per_difficulty": {
+                    1: stats["diversity_per_difficulty"][i][1],
+                    2: stats["diversity_per_difficulty"][i][2],
+                    3: stats["diversity_per_difficulty"][i][3],
+                    4: stats["diversity_per_difficulty"][i][4],
+                },
+                "diversity_per_topic": stats["diversity_per_topic"][i],
+                "sentiment": stats["sentiment"][i],
+                "text": stats["text"][i],
+                "overall_diversity": stats["overall_diversity"][i],
+            }
+        )
+
+    return transformed_stats
+
+
 @app.route("/api/stats", methods=["POST"])
 def get_stats():
     texts = request.json.get("texts")
@@ -69,7 +93,7 @@ def get_stats():
         return jsonify({"error": "No text found"}), 400
     stats = functions.docs_to_answer(texts)
     # shape: {'text': [], 'difficulty': [], 'diversity_per_topic': [], 'overall_diversity': [], 'diversity_per_difficulty': [], 'sentiment': []}
-    return jsonify(stats)
+    return jsonify(transform_stats(stats))
 
 
 if __name__ == "__main__":

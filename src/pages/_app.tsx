@@ -18,13 +18,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
-  const [stats, setStats] = useState<Stats>({
-    difficulty: [],
-    diversity_per_difficulty: [],
-    diversity_per_topic: [],
-    overall_diversity: [],
-    sentiment: [],
-  });
+  const [stats, setStats] = useState<Stats>([]);
   const [windowDifficulties, setWindowDifficulties] = useState<
     WindowDifficulty[]
   >([]);

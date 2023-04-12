@@ -20,9 +20,6 @@ export type CreateControlPanelProps = {
   collectionTypeToView: CollectionType | undefined;
 };
 
-// shape of stats
-// # shape: {'text': [], 'difficulty': [], 'diversity_per_topic': [], 'overall_diversity': [], 'diversity_per_difficulty': [], 'sentiment': []}
-
 const CreateControlPanel = ({
   collectionTypeToView,
   setCollectionTypeToView,
@@ -38,8 +35,8 @@ const CreateControlPanel = ({
 
   const statsMutation = useMutation(
     () => {
-      const url = process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL
-        ? `${process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL}/stats`
+      const url = process.env["NEXT_PUBLIC_MODEL_ENDPOINT_URL"]
+        ? `${process.env["NEXT_PUBLIC_MODEL_ENDPOINT_URL"]}/stats`
         : "";
 
       return fetch(url, {
@@ -50,28 +47,19 @@ const CreateControlPanel = ({
         body: JSON.stringify({
           texts: selectedDocuments.map((doc) => doc.text),
         }),
-      }).then((res) => statsSchema.parse(res.json()));
+      }).then((res) => res.json());
     },
     {
       onSuccess: (data) => {
-        setStats(data);
+        console.log("la statistics", data);
+        const stats = statsSchema.parse(data);
+
+        setStats(stats);
       },
     }
   );
   const handleCompare = () => {
-    // for (const doc of selectedDocuments) {
-    //   difficultyMutation.mutate({
-    //     text: doc.text,
-    //   });
-    //   windowDifficultyMutation.mutate({
-    //     text: doc.text,
-    //   });
-    // }
     statsMutation.mutate();
-
-    // difficultyMutation.mutate({
-    //   text
-    // })
   };
   return (
     <div className="flex h-full w-full flex-col overflow-y-scroll">

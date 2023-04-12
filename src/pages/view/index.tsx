@@ -137,39 +137,29 @@ const index = () => {
         />
         <div className="overflow-hidden p-7">
           <div className="flex w-full flex-wrap justify-between  rounded-md px-3">
-            {fakeTextStats.map((stat) => (
+            {stats.map((state, idx) => (
               <div
-                key={stat.difficulty}
+                key={state.difficulty}
                 className="m-2 flex  h-44 w-72 flex-col rounded-lg bg-gray-700 p-4 shadow-lg ring-white  hover:ring-2"
               >
                 <p className="text-xl font-bold text-gray-300">
-                  Difficulty: {stat.difficulty}
+                  Difficulty: {state.difficulty}
+                </p>
+
+                <p className="text-xl font-bold text-gray-300">
+                  Diversity Per Topic:
+                  {JSON.stringify(state.diversity_per_topic)}
                 </p>
                 <p className="text-xl font-bold text-gray-300">
-                  Readability: {stat.readability}
+                  Sentiment: {state.sentiment}
                 </p>
                 <p className="text-xl font-bold text-gray-300">
-                  Diversity: {stat.diversity}
-                </p>
-                <p className="text-xl font-bold text-gray-300">
-                  Sentiment: {stat.sentiment}
+                  Overall Diversity: {state.overall_diversity}
                 </p>
 
                 <div className="mt-auto h-3 w-full rounded-2xl bg-sky-500" />
               </div>
             ))}
-
-            {/* <div className="w-1/2 border-r border-slate-500 ">
-              <div className="flex h-96 flex-col ">
-                {selectedDocument && <TextView document={selectedDocument} />}
-              </div>
-              <div className="flex h-96 flex-col p-3 ">
-                <StatsTable />
-              </div>
-            </div>
-            <div className="w-1/2">
-           
-            </div> */}
           </div>
           <div className="w-full px-5">
             <div className="flex h-full w-full justify-center rounded-md py-4">

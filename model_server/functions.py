@@ -57,6 +57,8 @@ device = torch.device("cuda" if torch.cuda.is_available else "cpu")
 import pickle
 import io
 
+nltk.download("vader_lexicon")
+
 
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
@@ -346,6 +348,7 @@ def sliding_window(text):
         "original": text,
         "interpretation": mapd,
         "raw_scores": inter_scores,
+        "tokens": words,
     }
 
 
@@ -367,8 +370,9 @@ def text_to_diversity_per_difficulty(text, diversity_fn):
 
     sliding_window_result = sliding_window(text)
 
-    for word, score in sliding_window_result["interpretation"]:
-        score_map[clamp(score)] += [word + " "]
+    for idx, score in enumerate(sliding_window_result["raw_scores"]):
+        if idx < len(sliding_window_result["tokens"]):
+            score_map[clamp(score)] += [sliding_window_result["tokens"][idx] + " "]
 
     for score, words in score_map.items():
         words_joined = " ".join(words)
@@ -489,6 +493,7 @@ def docs_to_answer(docs: List[str]):
         data["text"].append(text)
         data["difficulty"].append(difficulty)
         data["diversity_per_topic"].append(diversity_per_topic)
+        data["overall_diversity"].append(overall_diversity)
 
         data["diversity_per_difficulty"].append(diversity_per_difficulty)
 

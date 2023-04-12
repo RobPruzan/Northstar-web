@@ -11,13 +11,21 @@ export type DifficultyData = Document & { difficulty: number };
 //   sentiment: number[];
 // };
 
-export const statsSchema = z.object({
-  difficulty: z.array(z.number()),
-  diversity_per_topic: z.array(z.number()),
-  overall_diversity: z.array(z.number()),
-  diversity_per_difficulty: z.array(z.number()),
-  sentiment: z.array(z.number()),
-});
+export const statsSchema = z.array(
+  z.object({
+    difficulty: z.number(),
+    diversity_per_difficulty: z.object({
+      1: z.number(),
+      2: z.number(),
+      3: z.number(),
+      4: z.number(),
+    }),
+    diversity_per_topic: z.record(z.number()),
+    sentiment: z.number(),
+    text: z.string(),
+    overall_diversity: z.number(),
+  })
+);
 
 export type Stats = z.infer<typeof statsSchema>;
 
@@ -27,13 +35,7 @@ export type StatsContextData = {
 };
 
 export const StatsContext = createContext<StatsContextData>({
-  stats: {
-    difficulty: [],
-    diversity_per_difficulty: [],
-    diversity_per_topic: [],
-    overall_diversity: [],
-    sentiment: [],
-  },
+  stats: [],
   setStats: () => {
     console.log("no provider");
   },
