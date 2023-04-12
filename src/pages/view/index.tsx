@@ -134,7 +134,7 @@ const index = () => {
           analyzeDocument={analyzeDocument}
           setAnalyzeDocument={setAnalyzeDocument}
         />
-        <div className="overflow-hidden p-7">
+        <div className="w-full overflow-hidden p-7">
           <div className="flex w-full flex-wrap justify-between  rounded-md px-3">
             {stats.length == 0 &&
               selectedDocuments.map((doc) => (
@@ -172,10 +172,12 @@ const index = () => {
               <TextView analyzeDocument={analyzeDocument} />
             </div>
           </div>
-          <div className="relative w-full px-5">
-            <LineChart />
-            <BarChart />
-          </div>
+        </div>
+      </div>
+      <div className="flex h-screen w-screen  items-center justify-center bg-gray-900">
+        <div className="relative w-full px-5">
+          <LineChart />
+          <BarChart />
         </div>
       </div>
     </>
