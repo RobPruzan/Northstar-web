@@ -60,28 +60,12 @@ export const TextView = ({ document, analyzeDocument }: TextViewProps) => {
 
   const [tokens, setTokens] = useState(word_tokenize(analyzeDocument?.text));
   const [selectedTextView, setSelectedTextView] = useState<TextViewType>("raw");
-  console.log("selected doc!!!", analyzeDocument);
-  console.log("tokens", tokens);
   useEffect(() => {
     setTokens(word_tokenize(analyzeDocument?.text));
   }, [analyzeDocument?.text]);
   return (
     <div className="flex h-80 w-full  flex-col items-center justify-center">
       <div className="flex h-16 w-full rounded-t-md bg-gray-700 text-gray-300">
-        {/* <button className={`
-        
-        m-2 flex-1 rounded-md bg-sky-500 p-2 font-bold text-gray-700`}>
-          Raw Text
-        </button>
-        <button className="m-2 flex-1 rounded-md bg-gray-600 p-2">
-          Diversity
-        </button>
-        <button className="m-2 flex-1 rounded-md bg-gray-600 p-2">
-          Difficulty
-        </button>
-        <button className="m-2 flex-1 rounded-md bg-gray-600 p-2">
-          Vocabulary
-        </button> */}
         {TextViewTypes.map((type) => (
           <button
             key={type}
@@ -107,7 +91,7 @@ export const TextView = ({ document, analyzeDocument }: TextViewProps) => {
       overflow-y-scroll
       rounded-b-md border  border-slate-600"
       >
-        {["hello", "my", "name", "is", "frank"].map((token, index) => (
+        {tokens.map((token, index) => (
           <TokenView key={index} token={token} heatMapValue={0} />
         ))}
         {/* <div className="w-full border-t border-gray-600"></div> */}

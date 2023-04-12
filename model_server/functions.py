@@ -49,6 +49,8 @@ from transformers import BertTokenizer
 from transformers import AutoTokenizer, BertForSequenceClassification
 
 topic_model = BERTopic.load("colab_topic_model")
+# with open("colab_topic_model", "rb") as f:
+#     topic_model = pickle.load(f)
 
 nltk.download("stopwords")
 

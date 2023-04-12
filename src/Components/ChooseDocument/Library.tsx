@@ -43,8 +43,6 @@ const Library = ({
     }
   );
 
-  console.log(paginationQuery.data);
-
   return (
     <>
       <div className="flex flex-wrap  justify-center p-3">

@@ -75,7 +75,6 @@ export default function CollectionSearch({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
             afterLeave={() => {
-              console.log("a", query);
               setSearchName(query);
               const collectionType = collectionTypeSchema.safeParse(
                 searchQuery.data?.find((data) => data.name === query)?.type
@@ -84,7 +83,6 @@ export default function CollectionSearch({
               collectionType.success &&
                 setCollectionTypeToView(collectionType.data);
               const qc = getQueryKey(api.pagination.getTotalPages);
-              console.log("qc", qc);
               void queryClient.invalidateQueries(qc);
             }}
           >

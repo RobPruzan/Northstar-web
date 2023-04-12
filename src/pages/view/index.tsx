@@ -121,7 +121,6 @@ const index = () => {
     selectedDocuments.length > 0 ? selectedDocuments[0] : undefined
   );
   const { stats, setStats } = useContext(StatsContext);
-  console.log("stats", stats);
   return (
     <>
       <NavBar />
@@ -137,24 +136,31 @@ const index = () => {
         />
         <div className="overflow-hidden p-7">
           <div className="flex w-full flex-wrap justify-between  rounded-md px-3">
+            {stats.length == 0 &&
+              selectedDocuments.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="m-2 flex h-44 w-72 animate-pulse flex-col rounded-lg border border-gray-50 bg-gray-700 p-4 shadow-lg"
+                />
+              ))}
             {stats.map((state, idx) => (
               <div
                 key={state.difficulty}
                 className="m-2 flex  h-44 w-72 flex-col rounded-lg bg-gray-700 p-4 shadow-lg ring-white  hover:ring-2"
               >
                 <p className="text-xl font-bold text-gray-300">
-                  Difficulty: {state.difficulty}
+                  Difficulty: {state.difficulty.toFixed(2)}
                 </p>
 
-                <p className="text-xl font-bold text-gray-300">
+                {/* <p className="text-xl font-bold text-gray-300">
                   Diversity Per Topic:
                   {JSON.stringify(state.diversity_per_topic)}
+                </p> */}
+                <p className="text-xl font-bold text-gray-300">
+                  Sentiment: {state.sentiment.toFixed(2)}
                 </p>
                 <p className="text-xl font-bold text-gray-300">
-                  Sentiment: {state.sentiment}
-                </p>
-                <p className="text-xl font-bold text-gray-300">
-                  Overall Diversity: {state.overall_diversity}
+                  Overall Diversity: {state.overall_diversity.toFixed(2)}
                 </p>
 
                 <div className="mt-auto h-3 w-full rounded-2xl bg-sky-500" />

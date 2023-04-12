@@ -53,7 +53,6 @@ const DocumentSelections = ({
             } `}
             onClick={() => {
               setSelectedDocument && setSelectedDocument(document);
-              console.log(document);
             }}
           >
             <DocumentCard cursor={"pointer"} isSelection document={document} />
