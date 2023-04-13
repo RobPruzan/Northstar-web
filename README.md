@@ -7,8 +7,6 @@
 
 Demo: https://huggingface.co/spaces/RobPruzan/automaticlitassesment
 
-The code responsible for performing literacy assessments is curretnly only available in the following respository-  https://github.com/RobPruzan/Literacy-Assessment
-
 **Reading Difficulty**-  Automatically determining how difficult something is to read is a difficult task as underlying 
                  semantics are relevant. To efficiently compute text difficulty, a Distil-RoBERTa pre-trained model is fine-tuned for regression 
                  using The CommonLit Ease of Readability (CLEAR) Corpus. This model scores the text on how difficult it would be for a student
