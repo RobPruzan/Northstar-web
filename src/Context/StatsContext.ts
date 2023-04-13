@@ -10,22 +10,23 @@ export type DifficultyData = Document & { difficulty: number };
 //   diversity_per_difficulty: number[];
 //   sentiment: number[];
 // };
+export const statSchema = z.object({
+  difficulty: z.number(),
+  diversity_per_difficulty: z.object({
+    1: z.number(),
+    2: z.number(),
+    3: z.number(),
+    4: z.number(),
+  }),
+  diversity_per_topic: z.record(z.number()),
+  sentiment: z.number(),
+  text: z.string(),
+  overall_diversity: z.number(),
+});
 
-export const statsSchema = z.array(
-  z.object({
-    difficulty: z.number(),
-    diversity_per_difficulty: z.object({
-      1: z.number(),
-      2: z.number(),
-      3: z.number(),
-      4: z.number(),
-    }),
-    diversity_per_topic: z.record(z.number()),
-    sentiment: z.number(),
-    text: z.string(),
-    overall_diversity: z.number(),
-  })
-);
+export type Stat = z.infer<typeof statSchema>;
+
+export const statsSchema = z.array(statSchema);
 
 export type Stats = z.infer<typeof statsSchema>;
 

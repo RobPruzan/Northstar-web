@@ -26,15 +26,10 @@ const ViewDocumentSideBar = ({
     SelectedDocumentsContext
   );
   return (
-    <div className=" h-screen px-4">
+    <div className=" px-4">
       <div
-        className={`
-mt-7 flex
-      h-screen w-64 flex-col  items-center rounded-xl bg-gray-700  p-5
-    
-      `}
+        className={`h- mt-7 flex h-5/6 w-64 flex-col  items-center rounded-xl bg-gray-700  p-5`}
       >
-        {/* Your sidebar content goes here */}
         <div className=" w-full flex-1 flex-col items-center overflow-hidden">
           {selectedDocuments.map((document) => (
             <ViewDocumentInfo
