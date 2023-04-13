@@ -76,7 +76,7 @@ export type CollectionDocument = {
 const DEFAULT_CURRENT_DOCUMENT = {
   text: "",
   title: "",
-  id: "",
+  id: "default",
 };
 
 const DEFAULT_CREATION_DOCUMENT = {
@@ -177,24 +177,10 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
             <p className="m-2 text-3xl font-semibold text-white">
               Create a collection of documents
             </p>
-
-            {/* <BsPlusCircle
-              onClick={handleAddDocument}
-              className="absolute right-0 cursor-pointer transition   hover:scale-105 hover:fill-gray-300"
-              color="white"
-              size={60}
-            /> */}
           </div>
           <div className="flex h-full w-full">
             <div className="flex h-full w-5/6 flex-col">
               <input
-                // value={document?.title}
-                // onChange={(event) => {
-                //   setDocument((prev) => ({
-                //     ...prev,
-                //     title: event.target.value,
-                //   }));
-                // }}
                 onChange={(event) => {
                   if (creationDocument.active) {
                     setCreationDocument((prev) => ({
@@ -213,11 +199,6 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                       };
                     });
                   }
-
-                  // setCurrentDocument((prev) => ({
-                  //   ...prev,
-                  //   title: event.target.value,
-                  // }));
                 }}
                 value={
                   creationDocument.active
@@ -235,15 +216,6 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                     : currentDocument.text
                 }
                 onChange={(event) => {
-                  // creationDocument.active
-                  //   ? setCreationDocument((prev) => ({
-                  //       ...prev,
-                  //       text: event.target.value,
-                  //     }))
-                  //   : setCurrentDocument((prev) => ({
-                  //       ...prev,
-                  //       text: event.target.value,
-                  //     }));
                   if (creationDocument.active) {
                     setCreationDocument((prev) => ({
                       ...prev,
@@ -261,18 +233,13 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                       };
                     });
                   }
-
-                  // setCurrentDocument((prev) => ({
-                  //   ...prev,
-                  //   text: event.target.value,
-                  // }));
                 }}
                 className="m-2 h-5/6 rounded bg-gray-300 p-2 text-lg text-gray-600 outline-none"
               />
             </div>
-            <div className="flex h-full w-2/6 flex-col items-center  ">
+            <div className="flex h-full w-2/6 flex-col items-center px-3 ">
               <input
-                className="m-2 rounded bg-gray-200 p-2 text-lg text-gray-600 outline-none"
+                className="m-2 w-full rounded bg-gray-200 p-2 text-lg text-gray-600 outline-none"
                 placeholder="Collection Title"
                 value={collectionTitle}
                 onChange={(event) => {
@@ -280,21 +247,29 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                 }}
               />
               <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
+                // whileHover={{ scale: 1.01 }}
+                // whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setCurrentDocument(creationDocument);
                   setCreationDocument((prev) => ({ ...prev, active: true }));
                 }}
                 className={`
-                 ${creationDocument.active ? "bg-sky-600 " : ""}
-                  relative m-2  h-10 w-full flex-col break-words rounded-md bg-sky-800  p-2 text-gray-300 transition  hover:border hover:border-slate-400 `}
+                 ${creationDocument.active ? "ring-1 ring-gray-200 " : ""}
+                  relative m-2 h-10 w-full flex-col items-center justify-center break-words rounded-md bg-sky-800  p-2 text-gray-300 transition  hover:border hover:border-slate-400 `}
               >
-                {creationDocument.title}
+                {/* {creationDocument.title} */}
+                {creationDocument.title === "" ? (
+                  <p className="m-0 p-0 text-lg font-semibold text-gray-300">
+                    Create a new document
+                  </p>
+                ) : (
+                  <p className="m-0 p-0 text-lg font-semibold text-gray-300">
+                    {creationDocument.title}
+                  </p>
+                )}
               </motion.button>
               <div className="mb-2  flex h-96 w-full flex-col overflow-y-scroll rounded-md border border-slate-500 text-center">
                 <p className="border-b border-b-slate-300 p-3 font-semibold text-gray-300">
-                  {" "}
                   Current Documents
                 </p>
                 {documents.map((document, index) => (
@@ -310,23 +285,17 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                     className={`
                   ${
                     document.id === currentDocument.id
-                      ? "bg-slate-800"
-                      : "bg-slate-600"
+                      ? "ring-1 ring-gray-200"
+                      : ""
                   }
-                  relative m-2 flex flex-col break-words rounded-md border border-slate-500 bg-slate-600 p-2 text-gray-200 transition  hover:scale-105`}
+                  relative m-2 flex flex-col break-words rounded-md border border-slate-500 bg-slate-600 p-2 text-gray-200 `}
                   >
                     {document.title}
                   </button>
                 ))}
               </div>
-              {/* <BsPlusCircle
-                onClick={handleAddDocument}
-                className="absolute bottom-0 cursor-pointer transition   hover:scale-105 hover:fill-gray-300"
-                color="white"
-                size={60}
-              /> */}
               <button
-                className="m-2 mt-auto mb-6 w-5/6 rounded-md bg-slate-500 p-2 font-semibold text-white shadow-md transition ease-in-out hover:scale-105 hover:text-slate-200 "
+                className="m-2 mt-auto mb-6 w-full rounded-md bg-slate-500 p-2 font-semibold text-white shadow-md transition ease-in-out hover:scale-105 hover:text-slate-200 "
                 onClick={handleAddDocument}
               >
                 Add Document
@@ -346,11 +315,6 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              // onClick={() => {
-              //   createDocumentMutation.mutate(document);
-              //   handleClose();
-              // }}
-
               disabled={documents.length === 0 || collectionTitle === ""}
               onClick={() => {
                 createDocumentMutation.mutate({

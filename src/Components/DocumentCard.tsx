@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { BsX } from "react-icons/bs";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import useDeleteDocument from "./hooks/useDeleteDocument";
+import { word_tokenize } from "./ViewHelpers/TextView";
 export const COLOR_MAP = (difficulty: number) => {
   if (difficulty <= 30) {
     return "lime";
@@ -79,7 +80,9 @@ const DocumentCard = ({ document, isSelection, cursor }: DocumentCardProps) => {
             </div>
             <div className="mx-3">
               <p className="text-slate-400">Length</p>
-              <p className="inline text-green-500">{document.text.length}</p>
+              <p className="inline text-green-500">
+                {word_tokenize(document.text).length}
+              </p>
             </div>
           </div>
         </div>

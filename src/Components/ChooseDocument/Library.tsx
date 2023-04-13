@@ -46,14 +46,15 @@ const Library = ({
   return (
     <>
       <div className="flex flex-wrap  justify-center p-3">
-        {collectionTypeToView === "user" &&
-        (paginationQuery.data?.length ?? 0) < 3 ? (
-          <div className="ml-6">
+        {collectionTypeToView === "user" ? (
+          (paginationQuery.data?.length ?? 0) < 3 ? (
+            <div className="ml-6">
+              <CreateCollection />
+            </div>
+          ) : (
             <CreateCollection />
-          </div>
-        ) : (
-          <CreateCollection />
-        )}
+          )
+        ) : null}
 
         {paginationQuery.isLoading ? (
           <></>

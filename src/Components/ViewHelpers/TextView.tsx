@@ -33,18 +33,6 @@ export type TextViewProps = {
   analyzeDocument: Document | undefined;
 };
 
-// export enum TextViewTypes {
-//   raw = "raw",
-
-//   difficulty = "difficulty",
-
-//   readability = "readability",
-
-//   diversity = "diversity",
-
-//   sentiment = "sentiment",
-// }
-
 export const TextViewTypes = [
   "raw",
   "difficulty",
@@ -141,27 +129,18 @@ export type TokenViewProps = {
 
 export const TokenView = ({ token, heatMapValue }: TokenViewProps) => {
   const [showMenu, setShowMenu] = useState(false);
-  // need to have a menu popup on hover
-  // the classes will be absolute transform-y-50 h-30 w-30 overflow-y-scroll
-  // it will need to be kinda like a modal, you should be able to click outside of it to close it
-  // that also means you cannot scroll the text view while the menu is open
   return (
     <motion.div
-      onMouseEnter={() => {
-        setShowMenu(true);
+      onClick={() => {
+        setShowMenu((prev) => !prev);
       }}
-      onMouseLeave={() => {
-        setShowMenu(false);
-      }}
+      // onMouseLeave={() => {
+      //   setShowMenu(false);
+      // }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      // ${valueToHeatmap(heatMapValue)}
-      className={`
-     relative
-     
-  h-fit
- w-fit cursor-pointer p-1 font-semibold text-slate-400 transition hover:scale-105 hover:text-slate-500`}
+      className={`relative h-fit w-fit cursor-pointer p-1 font-semibold text-slate-400 transition hover:scale-105 hover:text-slate-500`}
     >
       {token}
       <TokenMenu showMenu={showMenu} />
@@ -175,26 +154,21 @@ export function TokenMenu({ showMenu }: TokenMenuProps) {
   return (
     <AnimatePresence>
       {showMenu && (
+        // <div className="fixed inset-0 z-50 h-screen w-screen bg-black opacity-50">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className=" absolute z-50  h-32 w-32
-          translate-x-7 -translate-y-60
-          overflow-y-scroll bg-white"
-        >
-          {/* <div className="w-full border-t border-gray-600"></div> */}
-        </motion.div>
+          style={{
+            zIndex: 100,
+          }}
+          className=" fixed   h-32 w-32
+          -translate-y-36 translate-x-7 overflow-y-scroll rounded-md
+          border border-slate-600
+          bg-white will-change-auto"
+        ></motion.div>
+        // </div>
       )}
     </AnimatePresence>
-    // <motion.div
-    //   initial={{ opacity: 0 }}
-    //   animate={{ opacity: 1 }}
-    //   transition={{ duration: 0.5 }}
-    //   exit={{ opacity: 0 }}
-    //   className=" absolute z-50  h-32 w-32  overflow-y-scroll bg-white"
-    // >
-    //   {/* <div className="w-full border-t border-gray-600"></div> */}
-    // </motion.div>
   );
 }

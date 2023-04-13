@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { type Dispatch, type SetStateAction } from "react";
 import { api } from "~/utils/api";
 import useDeleteDocument from "../hooks/useDeleteDocument";
+import { word_tokenize } from "../ViewHelpers/TextView";
 
 export const setSelectedDocumentsUniquely = (
   setSelectedDocuments: Dispatch<SetStateAction<Document[]>>,
@@ -49,46 +50,26 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
             >
               {document.title}
             </p>
-            {/* 
-            <BsX
-              onClick={() =>
-                documentMutation.mutate({
-                  documentId: document.id,
-                })
-              }
-              color="red"
-              size={30}
-              className="absolute top-0 right-0  cursor-pointer fill-red-500 hover:scale-110  hover:fill-red-700 "
-              fontSize="medium"
-            /> */}
-            {/* <BsPlus
-              onClick={() =>
-                setSelectedDocuments((prev) => [...prev, document])
-              }
-              color="green"
-              size={30}
-              className="absolute bottom-0 right-0  cursor-pointer fill-green-500 hover:scale-110  hover:fill-green-700 "
-              fontSize="medium"
-            /> */}
-
             <div className="m-2 h-max w-full min-w-min rounded-md bg-slate-700 p-1 text-center text-sm">
               <div
-                onClick={(event) =>
+                onClick={() =>
                   setSelectedDocumentsUniquely(setSelectedDocuments, document)
                 }
                 className=" flex w-full  justify-evenly text-center text-xs"
               >
                 <div className="mx-3">
                   <p className="text-slate-400">Difficulty</p>
-                  <p className="text-yellow-300">{0}%</p>
+                  <p className="text-yellow-300">{document.difficulty}%</p>
                 </div>
                 <div className="mx-3">
                   <p className="inline text-slate-400">Diversity</p>
-                  <p className="text-red-500">{1}%</p>
+                  <p className="text-red-500">{document.diversity}%</p>
                 </div>
                 <div className="mx-3">
                   <p className="text-slate-400">Length</p>
-                  <p className="inline text-green-500">{2}</p>
+                  <p className="inline text-green-500">
+                    {word_tokenize(document.text).length}
+                  </p>
                 </div>
               </div>
             </div>
