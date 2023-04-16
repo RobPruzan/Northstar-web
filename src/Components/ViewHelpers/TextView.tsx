@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
+import { StyledMenu } from "../DocumentsPopOver";
 const puncs = [".", ",", "?", "!"];
 export const word_tokenize = (text: string | undefined) => {
   if (!text) return [];
@@ -128,47 +129,74 @@ export type TokenViewProps = {
 };
 
 export const TokenView = ({ token, heatMapValue }: TokenViewProps) => {
-  const [showMenu, setShowMenu] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
   return (
-    <motion.div
-      onClick={() => {
-        setShowMenu((prev) => !prev);
-      }}
-      // onMouseLeave={() => {
-      //   setShowMenu(false);
-      // }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className={`relative h-fit w-fit cursor-pointer p-1 font-semibold text-slate-400 transition hover:scale-105 hover:text-slate-500`}
-    >
-      {token}
-      <TokenMenu showMenu={showMenu} />
-    </motion.div>
+    <>
+      <TokenMenu
+        anchorEl={anchorEl}
+        handleClose={() => {
+          setAnchorEl(null);
+        }}
+        open={open}
+      />
+
+      <motion.div
+        onClick={(e) => {
+          // setAnchorEl(divRef);
+          handleClick(e);
+        }}
+        // onMouseLeave={() => {
+        //   setShowMenu(false);
+        // }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`relative h-fit w-fit cursor-pointer p-1 font-semibold text-slate-400 transition hover:scale-105 hover:text-slate-500`}
+      >
+        {token}
+      </motion.div>
+    </>
   );
 };
 export type TokenMenuProps = {
-  showMenu: boolean;
+  anchorEl: null | HTMLElement;
+  open: boolean;
+  handleClose: () => void;
 };
-export function TokenMenu({ showMenu }: TokenMenuProps) {
+export function TokenMenu({ anchorEl, handleClose, open }: TokenMenuProps) {
   return (
-    <AnimatePresence>
-      {showMenu && (
-        // <div className="fixed inset-0 z-50 h-screen w-screen bg-black opacity-50">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={{
-            zIndex: 100,
-          }}
-          className=" fixed   h-32 w-32
-          -translate-y-36 translate-x-7 overflow-y-scroll rounded-md
-          border border-slate-600
-          bg-white will-change-auto"
-        ></motion.div>
-        // </div>
-      )}
-    </AnimatePresence>
+    <StyledMenu
+      id="demo-customized-menu"
+      MenuListProps={{
+        "aria-labelledby": "demo-customized-button",
+      }}
+      //  close when clicked outside on next line
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "left",
+      }}
+      anchorEl={anchorEl}
+      open={open}
+      onClose={handleClose}
+      style={{
+        padding: 0,
+      }}
+      className="h-96 "
+    >
+      <div
+        style={{
+          marginTop: "-5px",
+          marginBottom: "-5px",
+          minWidth: "200px",
+        }}
+        className=": flex h-full w-full flex-col items-center bg-slate-600  p-4"
+      ></div>
+    </StyledMenu>
   );
 }
