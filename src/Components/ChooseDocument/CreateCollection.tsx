@@ -14,7 +14,9 @@ const CreateCollection = () => {
       <motion.button
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.99 }}
-        className="save-button top-0 m-2 mb-auto"
+        className={`
+
+        save-button top-0 m-2 mb-auto`}
         onClick={() => (modalOpen ? handleClose() : handleOpen())}
       >
         <CollectionCard>

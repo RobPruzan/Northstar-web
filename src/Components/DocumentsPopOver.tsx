@@ -15,9 +15,17 @@ export const DocumentsPopOver = ({ documents }: Props) => {
     SelectedDocumentsContext
   );
 
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  const filteredDocuments = documents.filter((document) =>
+    document.text.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  console.log("serach qeury", searchQuery, filteredDocuments);
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -56,24 +64,45 @@ export const DocumentsPopOver = ({ documents }: Props) => {
           style={{
             marginTop: "-5px",
             marginBottom: "-5px",
+            minWidth: "200px",
           }}
-          className="flex h-full w-full flex-col  bg-slate-600 p-3"
+          className=": flex h-full w-full flex-col items-center bg-slate-600  p-4"
         >
-          {documents.map((document) => (
-            <div key={document.id} className="flex flex-col">
-              <motion.button
-                onClick={() => {
-                  setSelectedDocumentsUniquely(setSelectedDocuments, document);
-                }}
-                whileHover={{
-                  scale: 1.02,
-                }}
-                whileTap={{ scale: 1 }}
-              >
-                <DocumentCard cursor="default" document={document} />
-              </motion.button>
-            </div>
-          ))}
+          <textarea
+            // value={searchQuery}
+            // onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search"
+            className="h-10 w-full rounded-md bg-slate-700 p-2 font-medium text-white outline-none ring-0"
+          />
+
+          {filteredDocuments.length > 0 ? (
+            filteredDocuments.map(
+              (document) =>
+                document.text
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase()) && (
+                  <div key={document.id} className="flex flex-col">
+                    <motion.button
+                      className="my-3"
+                      onClick={() => {
+                        setSelectedDocumentsUniquely(
+                          setSelectedDocuments,
+                          document
+                        );
+                      }}
+                      whileHover={{
+                        scale: 1.02,
+                      }}
+                      whileTap={{ scale: 1 }}
+                    >
+                      <DocumentCard cursor="default" document={document} />
+                    </motion.button>
+                  </div>
+                )
+            )
+          ) : (
+            <p>No documents found</p>
+          )}
         </div>
       </StyledMenu>
     </div>
