@@ -26,6 +26,8 @@ import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 import { Stat, Stats, StatsContext } from "~/Context/StatsContext";
 import StatsBoxes from "~/components/ViewHelpers/StatsBoxes";
 import LoadingStatsBoxes from "~/components/ViewHelpers/LoadingStatsBoxes";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 ChartJS.register(
   CategoryScale,
@@ -103,6 +105,15 @@ const index = () => {
     selectedDocuments.length > 0 ? selectedDocuments[0] : undefined
   );
   const { stats, setStats } = useContext(StatsContext);
+
+  const session = useSession();
+  const router = useRouter();
+
+  console.log("the session", session);
+  if (session.status === "unauthenticated") {
+    // Handle unauthenticated state, e.g. render a SignIn component
+    void router.push("/signin");
+  }
   return (
     <>
       <NavBar />

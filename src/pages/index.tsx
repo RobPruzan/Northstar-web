@@ -1,8 +1,11 @@
 import "@total-typescript/ts-reset";
 import { type NextPage } from "next";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import NavBar from "~/components/NavBar";
+import SignIn from "./signin";
+import { useRouter } from "next/router";
 
 const Home: NextPage = () => {
   return (

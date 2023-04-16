@@ -1,4 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useContext, useState } from "react";
 import DocumentSelections from "~/components/ChooseDocument/DocumentSelections";
 import Library from "~/components/ChooseDocument/Library";
@@ -15,7 +17,14 @@ const index = () => {
   const [collectionTypeToView, setCollectionTypeToView] = useState<
     "user" | "library"
   >();
+  const session = useSession();
+  const router = useRouter();
 
+  console.log("the session", session);
+  if (session.status === "unauthenticated") {
+    // Handle unauthenticated state, e.g. render a SignIn component
+    void router.push("/signin");
+  }
   const [searchName, setSearchName] = useState<string>();
   return (
     <QueryContext.Provider value={{ searchName, setSearchName }}>
