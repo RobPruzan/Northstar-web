@@ -20,7 +20,7 @@ const CreateModal = () => {
           <BsPlusCircle className="" color="white" size={40} />
         </div>
       </motion.button>
-      <AnimatePresence initial={false} mode="wait" onExitComplete={() => null}>
+      <AnimatePresence initial={false} mode="wait">
         {modalOpen && (
           <ModalBackdrop handleClose={handleClose} handleOpen={handleOpen} />
         )}

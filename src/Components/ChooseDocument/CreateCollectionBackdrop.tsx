@@ -295,7 +295,7 @@ const CreateCollectionBackdrop = ({ handleClose }: ModalBackdropProps) => {
                 ))}
               </div>
               <button
-                className="m-2 mt-auto mb-6 w-full rounded-md bg-slate-500 p-2 font-semibold text-white shadow-md transition ease-in-out hover:scale-105 hover:text-slate-200 "
+                className="mx-2 mt-auto mb-9 w-full rounded-md bg-slate-500 p-2 font-semibold text-white shadow-md transition ease-in-out hover:scale-105 hover:text-slate-200 "
                 onClick={handleAddDocument}
               >
                 Add Document

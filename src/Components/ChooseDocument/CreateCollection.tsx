@@ -23,7 +23,7 @@ const CreateCollection = () => {
           {/* </div> */}
         </CollectionCard>
       </motion.button>
-      <AnimatePresence initial={false} mode="wait" onExitComplete={() => null}>
+      <AnimatePresence initial={false} mode="wait">
         {modalOpen && (
           <CreateCollectionBackdrop
             handleClose={handleClose}

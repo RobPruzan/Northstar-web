@@ -55,4 +55,34 @@ export const documentRouter = createTRPCRouter({
           },
         })
     ),
+
+  deleteDocument: protectedProcedure
+    .input(z.object({ documentId: z.string() }))
+    .mutation(
+      async ({ input, ctx }) =>
+        await ctx.prisma.document.delete({
+          where: {
+            id: input.documentId,
+          },
+        })
+    ),
+  updateDocument: protectedProcedure
+    .input(
+      z.object({
+        documentId: z.string(),
+        text: z.string(),
+        title: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.prisma.document.update({
+        where: {
+          id: input.documentId,
+        },
+        data: {
+          title: input.title,
+          text: input.text,
+        },
+      });
+    }),
 });
