@@ -3,11 +3,14 @@ import { useContext, useRef, useState } from "react";
 import { alpha, styled } from "@mui/material";
 import Menu, { type MenuProps } from "@mui/material/Menu";
 import { type Document } from "@prisma/client";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { BsSearch } from "react-icons/bs";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { setSelectedDocumentsUniquely } from "./ChooseDocument/UserDocuments";
 import DocumentCard from "./DocumentCard";
+import EditableDocument from "./ChooseDocument/EditableDocument";
+import DocumentEdit from "./ChooseDocument/DocumentEdit";
+import { useEditableDocState } from "~/hooks/useEditableDocState";
 export type Props = { documents: Document[] };
 
 export const DocumentsPopOver = ({ documents }: Props) => {
@@ -19,10 +22,11 @@ export const DocumentsPopOver = ({ documents }: Props) => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const { currentEditDocument, isOpen, setCurrentEditDocument, setIsOpen } =
+    useEditableDocState();
 
   const filteredDocuments = documents.filter((document) =>
-    document.text.toLowerCase().includes(searchQuery.toLowerCase())
+    document.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleClose = () => {
@@ -62,40 +66,48 @@ export const DocumentsPopOver = ({ documents }: Props) => {
           style={{
             marginTop: "-5px",
             marginBottom: "-5px",
-            minWidth: "200px",
+            minWidth: "310px",
           }}
           className=": flex h-full w-full flex-col items-center bg-slate-600  p-4"
         >
-          <textarea
-            // value={searchQuery}
-            // onChange={(e) => setSearchQuery(e.target.value)}
+          <input
+            onKeyDown={(e) => {
+              e.stopPropagation();
+            }}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search"
             className="h-10 w-full rounded-md bg-slate-700 p-2 font-medium text-white outline-none ring-0"
           />
+          <AnimatePresence
+            onExitComplete={() => {
+              setCurrentEditDocument(null);
+            }}
+          >
+            {isOpen && currentEditDocument && (
+              // <>
+              <DocumentEdit
+                // key={"modal: " + document.id}
+                document={currentEditDocument}
+                setIsOpen={setIsOpen}
+              />
+              // </>
+            )}
+          </AnimatePresence>
 
           {filteredDocuments.length > 0 ? (
             filteredDocuments.map(
               (document) =>
-                document.text
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase()) && (
-                  <div key={document.id} className="flex flex-col">
-                    <motion.button
-                      className="my-3"
-                      onClick={() => {
-                        setSelectedDocumentsUniquely(
-                          setSelectedDocuments,
-                          document
-                        );
-                      }}
-                      whileHover={{
-                        scale: 1.02,
-                      }}
-                      whileTap={{ scale: 1 }}
-                    >
-                      <DocumentCard cursor="default" document={document} />
-                    </motion.button>
-                  </div>
+                document.title && (
+                  <EditableDocument
+                    currentEditDocument={currentEditDocument}
+                    document={document}
+                    isOpen={isOpen}
+                    setCurrentEditDocument={setCurrentEditDocument}
+                    setIsOpen={setIsOpen}
+                    setSelectedDocuments={setSelectedDocuments}
+                    key={document.id}
+                  />
                 )
             )
           ) : (
@@ -111,6 +123,8 @@ export const DocumentsPopOver = ({ documents }: Props) => {
 
 export const StyledMenu = styled((props: MenuProps) => (
   <Menu
+    accessKey=""
+    tabIndex={-1}
     elevation={0}
     anchorOrigin={{
       vertical: "bottom",
@@ -151,163 +165,3 @@ export const StyledMenu = styled((props: MenuProps) => (
     },
   },
 }));
-
-// export const NO_ACTIVE_POPUP = -1;
-
-// export default function CustomizedMenus({
-//   activePopUp,
-//   collectionId,
-//   excerptsInfo,
-//   setActivePopUp,
-// }: Props) {
-//   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-//   const open = Boolean(anchorEl);
-//   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-//     event.stopPropagation();
-//     setAnchorEl(event.currentTarget);
-
-//   };
-//   const handleClose = () => {
-//     setAnchorEl(null);
-
-//   };
-
-//   return (
-//     <>
-//       <button
-//         className=" float-left transition duration-300 ease-in-out hover:scale-125 hover:fill-slate-500 hover:shadow-2xl "
-//         onClick={handleClick}
-//       >
-//         <FcSearch size={27} />
-//       </button>
-//       <div
-//         className={`${
-//           open ? 'block' : 'hidden'
-//         }  flex h-full w-full justify-start`}
-//       >
-//         <StyledMenu
-//           id="demo-customized-menu"
-//           MenuListProps={{
-//             'aria-labelledby': 'demo-customized-button',
-//           }}
-//           anchorEl={anchorEl}
-//           open={open}
-//           onClose={handleClose}
-//         >
-//           <div className="mb-3 flex h-96 flex-col items-start justify-center">
-//             {excerptsInfo.length > 0 ? (
-//               excerptsInfo.map(
-//                 (excerptInfo) =>
-//                   collectionId === excerptInfo.excerpt.collection.id && (
-//                     <>
-//                       <SearchBar />
-//                       <ExcerptCard
-//                         difficulty={excerptInfo.difficulty}
-//                         diversity={excerptInfo.diversity}
-//                         text_length={excerptInfo.text_length}
-//                         title={excerptInfo.excerpt.title}
-//                       />
-//                     </>
-//                   )
-//               )
-//             ) : (
-//               <p
-//                 className="w-36 text-center text-xl  text-gray-600
-//               "
-//               >
-//                 No excerpts found
-//               </p>
-//             )}
-//           </div>
-//         </StyledMenu>
-//       </div>
-//     </>
-//   );
-// }
-
-// {/* <Popover
-//   // style={{
-//   //   position: "absolute",
-//   //   top: `${top}px`,
-//   //   left: `${left}px`,
-//   // }}
-//   className="relative"
-// >
-//   {({ open }) => (
-//     <>
-//       <Popover.Button
-//         onClick={() => {
-//           setOpen(!open);
-//         }}
-//         disabled={documents.length === 0}
-//         className={`
-
-//           ${open ? "" : "text-opacity-90"}
-//           ${
-//             documents.length === 0
-//               ? "bg-slate-500"
-//               : " bg-slate-800 transition  hover:scale-105"
-//           }
-//           group float-right inline-flex min-w-fit items-center rounded-md p-3  text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
-//       >
-//         {/* <BsChevronBarDown /> */}
-//         <BsChevronBarDown
-//           size={40}
-//           className={`${open ? "" : "text-opacity-70"}
-//             h-5 w-5 text-slate-300 transition duration-150  ease-in-out group-hover:text-opacity-80`}
-//           aria-hidden="true"
-//         />
-//       </Popover.Button>
-//       <Transition
-//         as={Fragment}
-//         enter="transition ease-out duration-200"
-//         enterFrom="opacity-0 translate-y-1"
-//         enterTo="opacity-100 translate-y-0"
-//         leave="transition ease-in duration-150"
-//         leaveFrom="opacity-100 translate-y-0"
-//         leaveTo="opacity-0 translate-y-1"
-//       >
-//         <Popover.Panel className=" absolute left-1/2 z-10 mt-3 w-56 max-w-sm  -translate-x-1/2 transform  px-4 sm:px-0">
-//           <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-//             <div
-//               // style={popoverStyle}
-//               style={{
-//                 // position: "absolute",
-//                 top: `${top}px`,
-//                 left: `${left}px`,
-//                 backgroundColor: "red",
-//               }}
-//               ref={popoverRef}
-//               // style={popoverStyle}
-//               className="relative z-50 grid h-96 w-fit gap-8 overflow-y-scroll border border-slate-400 bg-slate-500 p-7"
-//             >
-//               {documents.map((document) => (
-//                 <div key={document.id} className="flex flex-col">
-//                   <motion.button
-//                     onClick={() => {
-//                       setSelectedDocumentsUniquely(
-//                         setSelectedDocuments,
-//                         document
-//                       );
-//                     }}
-//                     whileHover={{
-//                       scale: 1.05,
-//                     }}
-//                     whileTap={{ scale: 1 }}
-//                   >
-//                     <DocumentCard
-//                       difficulty={document.difficulty}
-//                       // diversity={document.diversity}
-//                       text_length={document.text.length}
-//                       documentId={document.id}
-//                     />
-//                   </motion.button>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         </Popover.Panel>
-//       </Transition>
-//     </>
-//   )}
-// </Popover> */}

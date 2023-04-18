@@ -30,19 +30,15 @@ const DocumentEdit = ({ document, setIsOpen }: Props) => {
   const documentUpdateMutation = api.document.updateDocument.useMutation();
   const documentDeleteMutation = api.document.deleteDocument.useMutation();
 
-  const userDocuemntsQueryKey = api.document.getAllUserDocuments.useQuery();
+  const userDocuemntsQuery = api.document.getAllUserDocuments.useQuery();
+  const ahh = getQueryKey(api.pagination.getContent);
 
   const queryclient = useQueryClient();
   return (
-    // <>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      // key={"modal backdrop: " + document.id}
-      // initial={{ opacity: 0 }}
-      // animate={{ opacity: 1 }}
-      // exit={{ opacity: 0 }}
       onClick={(e) => {
         if (e.target === e.currentTarget) setIsOpen(false);
       }}
@@ -61,28 +57,24 @@ const DocumentEdit = ({ document, setIsOpen }: Props) => {
       >
         <div
           className={`
-        ${userDocuemntsQueryKey.isLoading ? "animate-pulse" : ""}
+        ${userDocuemntsQuery.isLoading ? "animate-pulse" : ""}
         flex h-full w-full flex-col p-3 text-center`}
         >
           <BsTrash
             onClick={() => {
-              documentDeleteMutation
-                .mutateAsync({
+              const handleClick = async () => {
+                await documentDeleteMutation.mutateAsync({
                   documentId: document.id,
-                })
-                .then(() => {
-                  userDocuemntsQueryKey
-                    .refetch()
-                    .then(() => setIsOpen(false))
-                    .catch((err) => {
-                      console.error(err);
-                    });
-                })
-
-                // .then(() => setIsOpen(false))
-                .catch((err) => {
-                  console.error(err);
                 });
+
+                await userDocuemntsQuery.refetch();
+
+                await queryclient.refetchQueries(ahh);
+
+                setIsOpen(false);
+              };
+
+              void handleClick();
             }}
             className="absolute top-4 right-2 m-2 cursor-pointer text-3xl text-white transition hover:text-red-500"
           />

@@ -57,7 +57,7 @@ const Library = ({
         ) : null}
 
         {paginationQuery.isLoading ? (
-          <></>
+          <>Loading pulse soon...</>
         ) : (
           paginationQuery.data?.map((collection) => (
             <motion.div

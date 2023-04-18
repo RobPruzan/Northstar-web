@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { SelectedDocumentsContext } from "~/Context/SelectedDocumentsContext";
 import { WindowDifficultiesContext } from "~/Context/WindowDifficultyContext";
 import { StyledMenu } from "../DocumentsPopOver";
+import { StatsContext } from "~/Context/StatsContext";
 const puncs = [".", ",", "?", "!"];
 export const word_tokenize = (text: string | undefined) => {
   if (!text) return [];
@@ -44,26 +45,20 @@ export const TextViewTypes = [
 export type TextViewType = (typeof TextViewTypes)[number];
 
 export const TextView = ({ document, analyzeDocument }: TextViewProps) => {
-  const { windowDifficulties } = useContext(WindowDifficultiesContext);
-  const { selectedDocuments } = useContext(SelectedDocumentsContext);
-
+  const { stats } = useContext(StatsContext);
   const [tokens, setTokens] = useState(word_tokenize(analyzeDocument?.text));
   const [selectedTextView, setSelectedTextView] = useState<TextViewType>("raw");
+
   useEffect(() => {
     setTokens(word_tokenize(analyzeDocument?.text));
   }, [analyzeDocument?.text]);
+
+  // const tokenDisplayValue = stats.find(s => {
+  //   if (selectedTextView)
+  // })
+  // hypothetical just find and use that as the display values, maybe also send a type to make it easier to use/do, and we just
   return (
     <div className="flex h-80 w-full  flex-col items-center justify-center">
-      <div className="perspective-1000">
-        <div className="card-inner">
-          <div className="card-front">
-            <h1>Front</h1>
-          </div>
-          <div className="card-back">
-            <h1>Back</h1>
-          </div>
-        </div>
-      </div>
       <div className="flex h-16 w-full rounded-t-md bg-gray-700 text-gray-300">
         {TextViewTypes.map((type) => (
           <button
