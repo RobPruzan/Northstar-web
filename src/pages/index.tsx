@@ -19,23 +19,13 @@ const Home: NextPage = () => {
 
       <main className="bg-slate-800 ">
         <div className="h-screen w-screen bg-slate-800">
-          <main className="bg-slate-800 ">
-            {/* {user.isSuccess &&
-          user.data.map((user) => <div key={user.id}>{user.name}</div>)}
-        <div className="h-screen w-screen bg-slate-800"></div>
-        <div className="h-screen w-screen bg-slate-700">hello!</div> */}
-            {/* <div className="h-screen bg-slate-800"> */}
-            <section className="mx-auto  h-screen p-8">
-              <div className="m-24 h-full w-2/5">
-                <p
-                  style={{
-                    fontSize: "6rem",
-                  }}
-                  className=" font-extrabold text-gray-400"
-                >
+          <main className="bg-slate-900 ">
+            <div className="mx-auto flex h-screen  flex-col p-8">
+              <div className="m-24 h-2/5 w-2/5">
+                <h1 className="bg-gradient-to-r from-slate-700 via-blue-900 to-slate-600 bg-clip-text text-8xl font-extrabold text-transparent">
                   Northstar
-                </p>
-                <p className="mb-4 text-lg text-gray-500">
+                </h1>
+                <p className="mb-4 text-lg text-gray-300">
                   Automatic literacy assessments with state of the art machine
                   learning models
                 </p>
@@ -45,17 +35,7 @@ const Home: NextPage = () => {
                   </button>
                 </Link>
               </div>
-            </section>
-
-            <footer className="mt-atuo mt-12 bg-slate-700 p-4">
-              <div className="container mx-auto">
-                <p className="text-center text-white">
-                  &copy; {new Date().getFullYear()} Northstar. All rights
-                  reserved.
-                </p>
-              </div>
-            </footer>
-            {/* </div> */}
+            </div>
           </main>
         </div>
       </main>

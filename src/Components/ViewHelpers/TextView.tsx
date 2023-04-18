@@ -54,6 +54,16 @@ export const TextView = ({ document, analyzeDocument }: TextViewProps) => {
   }, [analyzeDocument?.text]);
   return (
     <div className="flex h-80 w-full  flex-col items-center justify-center">
+      <div className="perspective-1000">
+        <div className="card-inner">
+          <div className="card-front">
+            <h1>Front</h1>
+          </div>
+          <div className="card-back">
+            <h1>Back</h1>
+          </div>
+        </div>
+      </div>
       <div className="flex h-16 w-full rounded-t-md bg-gray-700 text-gray-300">
         {TextViewTypes.map((type) => (
           <button
@@ -194,9 +204,18 @@ export function TokenMenu({ anchorEl, handleClose, open }: TokenMenuProps) {
           marginTop: "-5px",
           marginBottom: "-5px",
           minWidth: "200px",
+          minHeight: "200px",
         }}
-        className=": flex h-full w-full flex-col items-center bg-slate-600  p-4"
-      ></div>
+        className=" flex h-full w-full flex-col items-center bg-slate-600  p-4"
+      >
+        <div className="flex">
+          <p>
+            <span className="text-lg font-semibold text-sky-500">
+              Word Level Statistics
+            </span>
+          </p>
+        </div>
+      </div>
     </StyledMenu>
   );
 }

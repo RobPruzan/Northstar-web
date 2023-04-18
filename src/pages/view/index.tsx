@@ -74,10 +74,10 @@ export const data = {
   ],
 };
 const fakeStat: Stat = {
-  difficulty: 0.5,
+  difficulty: 0.2,
   diversity_per_difficulty: {
-    "1": 0.5,
-    "2": 0.5,
+    "1": 0.6,
+    "2": 0.2,
     "3": 0.5,
     "4": 0.5,
   },
@@ -87,8 +87,8 @@ const fakeStat: Stat = {
     topic3: 0.5,
     topic4: 0.5,
   },
-  overall_diversity: 0.5,
-  sentiment: 0.5,
+  overall_diversity: 0.1,
+  sentiment: 0.9,
   text: "hello",
 };
 
@@ -128,7 +128,7 @@ const index = () => {
           setAnalyzeDocument={setAnalyzeDocument}
         />
         <div className="w-full overflow-hidden p-7">
-          {!fakeStat ? <StatsBoxes stat={fakeStat} /> : <LoadingStatsBoxes />}
+          {!!fakeStat ? <StatsBoxes stat={fakeStat} /> : <LoadingStatsBoxes />}
           <div className="w-full px-5">
             <div className="flex h-full w-full justify-center rounded-md py-4">
               <TextView analyzeDocument={analyzeDocument} />

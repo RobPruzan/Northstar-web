@@ -15,8 +15,10 @@ export const collectionRouter = createTRPCRouter({
       return ctx.prisma.collection.findMany({
         where: {
           name: {
-            
+            // contains: input.name,
+            // lower case version of both strings
             contains: input.name,
+            mode: "insensitive",
           },
         },
         select: {

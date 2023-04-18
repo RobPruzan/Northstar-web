@@ -51,7 +51,6 @@ const CreateControlPanel = ({
     },
     {
       onSuccess: (data) => {
-        console.log("la statistics", data);
         const stats = statsSchema.parse(data);
 
         setStats(stats);

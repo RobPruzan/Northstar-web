@@ -19,3 +19,4 @@ bertopic
 hdbscan
 sentence_transformers
 umap-learn
+flask-restful

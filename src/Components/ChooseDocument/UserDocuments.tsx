@@ -77,6 +77,10 @@ const UserDocuments = ({ setSelectedDocuments }: Props) => {
                   event.target === event.currentTarget &&
                   setSelectedDocumentsUniquely(setSelectedDocuments, document)
                 }
+                style={{
+                  maxHeight: "2rem",
+                  overflowY: "scroll",
+                }}
                 className="text-2xl font-semibold text-slate-400"
               >
                 {document.title}

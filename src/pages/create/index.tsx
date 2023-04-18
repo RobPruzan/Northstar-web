@@ -20,7 +20,6 @@ const index = () => {
   const session = useSession();
   const router = useRouter();
 
-  console.log("the session", session);
   if (session.status === "unauthenticated") {
     // Handle unauthenticated state, e.g. render a SignIn component
     void router.push("/signin");

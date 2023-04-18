@@ -25,8 +25,6 @@ export const DocumentsPopOver = ({ documents }: Props) => {
     document.text.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  console.log("serach qeury", searchQuery, filteredDocuments);
-
   const handleClose = () => {
     setAnchorEl(null);
   };
