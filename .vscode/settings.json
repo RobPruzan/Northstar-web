@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["jsonify", "Northstar", "openai", "queryclient", "signin"]
+  "cSpell.words": [
+    "cuda",
+    "jsonify",
+    "Northstar",
+    "openai",
+    "queryclient",
+    "signin"
+  ]
 }

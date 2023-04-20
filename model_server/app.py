@@ -50,6 +50,18 @@ class GPT(Resource):
         return self.query_gpt(prompt)
 
 
+class WordSense(Resource):
+    # expecting context: tokens, words: ...
+    context, words = request.json.get("context"), request.json.get("words")
+    # a medical word has its word, location and list of possible definitions
+    obj_list = [
+        functions.MedicalWord(word["word"], word["definitions"], word["location"])
+        for word in words
+    ]
+
+    validated_definitions = functions.definition_validation(obj_list)
+
+
 class WordsDifficulty(Resource):
     def translate(x: int):
         return -(x * 1.786 + 6.4) + 10

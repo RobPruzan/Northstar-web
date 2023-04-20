@@ -13,6 +13,12 @@ type Message = {
   id?: string;
 };
 
+type MedicalWord = {
+  word: string;
+  location: number;
+  definitions: string[];
+};
+
 const DEFAULT_MESSAGE: Message = {
   role: "user",
   text: "",
@@ -32,7 +38,7 @@ type Task = {
   goal: Goals;
 };
 
-const CalculationTasks: Task[] = goals.map((goal) => ({
+const calculationTasks: Task[] = goals.map((goal) => ({
   goal,
   completed: false,
 }));
@@ -40,7 +46,7 @@ const CalculationTasks: Task[] = goals.map((goal) => ({
 const MERRIAM_WEBSTER_API_KEY = z
   .string()
   .parse(process.env["NEXT_PUBLIC_MERRIAM_WEBSTER_API_KEY"]);
-export function getMerriamUrl(searchTerm: string, general?: boolean) {
+export function getMerriamUrl(searchTerm: string) {
   return `https://www.dictionaryapi.com/api/v3/references/medical/json/${searchTerm}?key=${MERRIAM_WEBSTER_API_KEY}`;
 }
 
@@ -53,8 +59,19 @@ const wordDifficultyUrl = `${baseUrl}/word_difficulty`;
 const Simplify = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const messageRef = useRef<HTMLDivElement>(null);
+  const [wordDefinitions, setWordDefinitions] = useState<
+    {
+      word: string;
+      location: number;
+      definition: string;
+    }[]
+  >([]);
   const [currentUserMessage, setCurrentUserMessage] =
     useState<Message>(DEFAULT_MESSAGE);
+
+  const medicalWords = wordDefinitions.reduce<MedicalWord[]>((prev, curr) => {
+    return prev.find((w) => w.location === curr.location);
+  }, []);
 
   const difficultyMutation = useMutation({
     mutationFn: async (text: string) => {
@@ -87,7 +104,7 @@ const Simplify = () => {
     },
   });
 
-  const wordDifficultyMutation = useMutation({
+  const wordsDifficultyMutation = useMutation({
     mutationFn: async (words: string[]) => {
       const res = await (
         await fetch(wordDifficultyUrl, {
@@ -109,6 +126,63 @@ const Simplify = () => {
     },
   });
 
+  const definitionMutation = useMutation({
+    mutationFn: async (word: string) => {
+      const res = await (
+        await fetch(getMerriamUrl(word), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ word }),
+        })
+      ).json();
+      // definitely the wrong type
+      // return z.string().parse(res);
+      return z
+        .object({
+          word: z.string(),
+          definition: z.string(),
+        })
+        .parse({
+          word,
+          definition: res,
+        });
+    },
+    onSuccess: (data) => {
+      setWordDefinitions((prev) => [...prev, data]);
+    },
+  });
+
+  const wordSenseMutation = useMutation({
+    mutationFn: async ({
+      context,
+
+      words,
+    }: {
+      context: string[];
+
+      words: MedicalWord[];
+    }) => {
+      const;
+      const res = await (await fetch()).json();
+    },
+  });
+
+  const loadingState = calculationTasks.map(({ completed, goal }) => {
+    switch (goal) {
+      // case "Getting definitions for difficult medical terminology":
+      //   return {completed: }
+
+      case "Identifying difficult medical terminology":
+        return { goal, completed: wordsDifficultyMutation.isSuccess };
+      case "Loading Summarization":
+        return { goal, completed: gptMutation.isSuccess };
+      case "Validating Summarization":
+        return { goal, completed: difficultyMutation.isSuccess };
+    }
+  });
+
   const pipeline = () => undefined;
 
   const getDefinitions = (difficultWords: any[]) => [];
@@ -117,7 +191,7 @@ const Simplify = () => {
 
   const handleStart = async () => {
     currentUserMessage && setMessages((prev) => [...prev, currentUserMessage]);
-    const difficultWords = await wordDifficultyMutation.mutateAsync(
+    const difficultWords = await wordsDifficultyMutation.mutateAsync(
       word_tokenize(currentUserMessage.text)
     );
 
