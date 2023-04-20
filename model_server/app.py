@@ -30,7 +30,7 @@ class Difficulty(Resource):
 
 
 class GPT(Resource):
-    def query_gpt(prompt):
+    def query_gpt(self, prompt):
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -47,23 +47,25 @@ class GPT(Resource):
         prompt = request.json.get("prompt")
         if prompt is None:
             return {"error": "No prompt found"}, 400
-        return self.query_gpt(prompt)
+        return jsonify({"response", self.query_gpt(prompt)})
 
 
 class WordSense(Resource):
     # expecting context: tokens, words: ...
-    context, words = request.json.get("context"), request.json.get("words")
-    # a medical word has its word, location and list of possible definitions
-    obj_list = [
-        functions.MedicalWord(word["word"], word["definitions"], word["location"])
-        for word in words
-    ]
+    def post(self):
+        context, words = request.json.get("context"), request.json.get("words")
+        # a medical word has its word, location and list of possible definitions
+        obj_list = [
+            functions.MedicalWord(word["word"], word["definitions"], word["location"])
+            for word in words
+        ]
 
-    validated_definitions = functions.definition_validation(obj_list)
+        validated_definitions = functions.definition_validation(context, obj_list)
+        return validated_definitions
 
 
 class WordsDifficulty(Resource):
-    def translate(x: int):
+    def translate(self, x: int):
         return -(x * 1.786 + 6.4) + 10
 
     def post(self):
@@ -126,7 +128,8 @@ api.add_resource(Difficulty, "/api/difficulty")
 api.add_resource(WindowDifficulty, "/api/window_difficulty")
 api.add_resource(Stats, "/api/stats")
 api.add_resource(GPT, "/api/gpt")
-api.add_resource(WordDifficulty, "api/word_difficulty")
+api.add_resource(WordsDifficulty, "/api/word_difficulty")
+api.add_resource(WordSense, "/api/word_sense")
 
 if __name__ == "__main__":
     app.run(debug=True, threaded=False, processes=1)

@@ -55,23 +55,14 @@ const baseUrl = z.string().parse(process.env["NEXT_PUBLIC_MODEL_ENDPOINT_URL"]);
 const difficultyUrl = `${baseUrl}/difficulty`;
 const gptUrl = `${baseUrl}/gpt`;
 const wordDifficultyUrl = `${baseUrl}/word_difficulty`;
+const wordSenseUrl = `${baseUrl}/word_sense`;
 
 const Simplify = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const messageRef = useRef<HTMLDivElement>(null);
-  const [wordDefinitions, setWordDefinitions] = useState<
-    {
-      word: string;
-      location: number;
-      definition: string;
-    }[]
-  >([]);
+  const [medicalWords, setMedicalWords] = useState<MedicalWord[]>([]);
   const [currentUserMessage, setCurrentUserMessage] =
     useState<Message>(DEFAULT_MESSAGE);
-
-  const medicalWords = wordDefinitions.reduce<MedicalWord[]>((prev, curr) => {
-    return prev.find((w) => w.location === curr.location);
-  }, []);
 
   const difficultyMutation = useMutation({
     mutationFn: async (text: string) => {
@@ -127,7 +118,13 @@ const Simplify = () => {
   });
 
   const definitionMutation = useMutation({
-    mutationFn: async (word: string) => {
+    mutationFn: async ({
+      word,
+      location,
+    }: {
+      word: string;
+      location: number;
+    }) => {
       const res = await (
         await fetch(getMerriamUrl(word), {
           method: "POST",
@@ -142,31 +139,63 @@ const Simplify = () => {
       return z
         .object({
           word: z.string(),
-          definition: z.string(),
+          definitions: z.array(z.string()),
+          location: z.number(),
         })
         .parse({
           word,
-          definition: res,
+          location,
+          definitions: res,
         });
     },
     onSuccess: (data) => {
-      setWordDefinitions((prev) => [...prev, data]);
+      setMedicalWords((prev) => [...prev, data]);
     },
   });
 
+  const dummyData = {
+    context:
+      "what a wonderful day today is. I will play so much baseball which is an awesome sport",
+    words: [
+      // word: string;
+      // location: number;
+      // definitions: string[];
+      {
+        word: "baseball",
+        location: 12,
+        definitions: [
+          "Baseball is a sport played with a rubber/leather ball, a bat, and a glove, and is very popular in america",
+        ],
+      },
+    ],
+  };
+
   const wordSenseMutation = useMutation({
-    mutationFn: async ({
-      context,
+    mutationFn: async () =>
+      //   {
+      //   context,
 
-      words,
-    }: {
-      context: string[];
+      //   words,
+      // }: {
+      //   context: string[];
 
-      words: MedicalWord[];
-    }) => {
-      const;
-      const res = await (await fetch()).json();
-    },
+      //   words: MedicalWord[];
+      //     }
+
+      {
+        const res = await (
+          await fetch(wordSenseUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              context: dummyData.context,
+              words: dummyData.words,
+            }),
+          })
+        ).json();
+      },
   });
 
   const loadingState = calculationTasks.map(({ completed, goal }) => {
@@ -256,7 +285,12 @@ const Simplify = () => {
             }
             className=" h-4/5 w-5/6 rounded-lg bg-slate-900 p-3 text-gray-200 outline-none ring-0 ring-slate-500 focus:ring-1 "
           />
-          <button className="flex h-4/5 w-20 items-center justify-center rounded-md bg-slate-900 p-2 shadow-lg  transition hover:scale-105">
+          <button
+            onClick={() => {
+              wordSenseMutation.mutate();
+            }}
+            className="flex h-4/5 w-20 items-center justify-center rounded-md bg-slate-900 p-2 shadow-lg  transition hover:scale-105"
+          >
             <BsSend size={25} className="fill-white" />
           </button>
         </div>

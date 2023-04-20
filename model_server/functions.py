@@ -48,7 +48,7 @@ from transformers import pipeline
 from transformers import BertTokenizer
 from transformers import AutoTokenizer, BertForSequenceClassification
 
-topic_model = BERTopic.load("colab_topic_model")
+# topic_model = BERTopic.load("colab_topic_model")
 # with open("colab_topic_model", "rb") as f:
 #     topic_model = pickle.load(f)
 
@@ -572,7 +572,7 @@ def construct_context_gloss_pairs(context, word: MedicalWord):
     definitions = word.definitions
 
     for definition in definitions:
-        if target == definition.word:
+        if target == definition:
             continue
         # because we are getting the definition, definition word == target word
         gloss = (definition, target)
@@ -648,6 +648,26 @@ class MedicalWord:
         self.location = location
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--bert_model", default="kanishka/GlossBERT", type=str)
+parser.add_argument(
+    "--no_cuda",
+    default=False,
+    action="store_true",
+    help="Whether not to use CUDA when available",
+)
+args, unknown = parser.parse_known_args()
+label_list = ["0", "1"]
+num_labels = len(label_list)
+sense_model = BertForSequenceClassification.from_pretrained(
+    args.bert_model, num_labels=num_labels
+)
+device = torch.device(
+    "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
+)
+sense_model.to(device)
+
+
 def _truncate_seq_pair(tokens_a, tokens_b, max_length):
     """Truncates a sequence pair in place to the maximum length."""
 
@@ -668,7 +688,9 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
 def infer(context, word: MedicalWord, args):
     target_start_id = word.location
     target_end_id = word.location + 1
-
+    context = " ".join(context)
+    print("context that's being tokenziesdf sojfads", context)
+    # need to start sending with @ to identify the word, need to use this tokenizer can't tokenize on the frontend
     sent = tokenizer4.tokenize(context)
     assert (
         0 <= target_start_id
@@ -677,17 +699,10 @@ def infer(context, word: MedicalWord, args):
     )
     target = " ".join(sent[target_start_id:target_end_id])
 
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
-    )
-
-    label_list = ["0", "1"]
-    num_labels = len(label_list)
-
-    model = BertForSequenceClassification.from_pretrained(
-        args.bert_model, num_labels=num_labels
-    )
-    model.to(device)
+    # sense_model = BertForSequenceClassification.from_pretrained(
+    #     args.bert_model, num_labels=num_labels
+    # )
+    # sense_model.to(device)
 
     examples = construct_context_gloss_pairs(context, word)
     eval_features, candidate_results = convert_to_features(examples, tokenizer4)
@@ -695,12 +710,12 @@ def infer(context, word: MedicalWord, args):
     input_mask = torch.tensor([f.input_mask for f in eval_features], dtype=torch.long)
     segment_ids = torch.tensor([f.segment_ids for f in eval_features], dtype=torch.long)
 
-    model.eval()
+    sense_model.eval()
     input_ids = input_ids.to(device)
     input_mask = input_mask.to(device)
     segment_ids = segment_ids.to(device)
     with torch.no_grad():
-        logits = model(
+        logits = sense_model(
             input_ids=input_ids,
             token_type_ids=segment_ids,
             attention_mask=input_mask,
@@ -717,16 +732,10 @@ def infer(context, word: MedicalWord, args):
     return sorted_results
 
 
-def definition_validation(context: str, words: List[MedicalWord]):
+def definition_validation(context: str, words: List[MedicalWord]) -> List:
     # definitions will be an an
 
     tokens = tokenizer4.tokenize(context)
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--bert_model", default="kanishka/GlossBERT", type=str)
-    parser.add_argument(
-        "--no_cuda",
-        default=False,
-        action="store_true",
-        help="Whether not to use CUDA when available",
-    )
-    args, unknown = parser.parse_known_args()
+    result = [infer(tokens, word, args) for word in words]
+    print("result from definition validation", result)
+    return result
