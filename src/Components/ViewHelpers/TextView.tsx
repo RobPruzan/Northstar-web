@@ -58,7 +58,7 @@ export const TextView = ({ document, analyzeDocument }: TextViewProps) => {
   // })
   // hypothetical just find and use that as the display values, maybe also send a type to make it easier to use/do, and we just
   return (
-    <div className="flex h-80 w-full  flex-col items-center justify-center">
+    <div className="flex h-96 w-full  flex-col items-center justify-center">
       <div className="flex h-16 w-full rounded-t-md bg-gray-700 text-gray-300">
         {TextViewTypes.map((type) => (
           <button

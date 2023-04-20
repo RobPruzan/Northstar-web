@@ -10,12 +10,11 @@ export const difficultSchema = z.object({
 export type Difficulty = z.infer<typeof difficultSchema>;
 export const useGetDifficultyScore = () => {
   const { difficulties, setDifficulties } = useContext(DifficultiesContext);
-  const url = process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL
-    ? `${process.env.NEXT_PUBLIC_MODEL_ENDPOINT_URL}/difficulty`
+  const url = process.env["NEXT_PUBLIC_MODEL_ENDPOINT_URL"]
+    ? `${process.env["NEXT_PUBLIC_MODEL_ENDPOINT_URL"]}/difficulty`
     : "";
   const difficultyMutation = useMutation(
     async ({ text }: { text: string }) => {
-
       const test = await fetch(url, {
         method: "POST",
         headers: {
@@ -23,7 +22,6 @@ export const useGetDifficultyScore = () => {
         },
         body: JSON.stringify({ text }),
       });
-
 
       return test.json();
     },

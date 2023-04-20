@@ -1,14 +1,13 @@
 // type Props = {}
 
-import Simplify from "~/components/MedGPT/Simplify";
-
 import NavBar from "~/components/NavBar";
+import Simplify from "~/components/Simplify";
 const index = () => {
   return (
     <div className="flex h-screen w-screen flex-col">
       <NavBar />
-      <div className="flex flex-col">
-        <Simplify />{" "}
+      <div className="flex h-full w-full flex-col">
+        <Simplify />
       </div>
     </div>
   );

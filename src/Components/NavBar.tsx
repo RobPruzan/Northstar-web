@@ -7,6 +7,7 @@ import AuthShowcase from "./Auth";
 const DEFAULT_NAVIGATION = [
   { name: "Create", href: "/create" },
   { name: "View", href: "/view" },
+  { name: "Simplify", href: "/simplify" },
 
   // { name: "Projects", href: "#", current: false },
   // { name: "Calendar", href: "#", current: false },

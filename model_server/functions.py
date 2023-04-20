@@ -293,6 +293,20 @@ def hdd(word_array, sample_size=42.0):
     return hdd_value
 
 
+def get_level(word):
+    with open("balanced_synonym_data.json") as f:
+        word = word.strip(" ")
+        data = json.loads(f.read())
+        level = 0
+
+        for k, v in data.items():
+            if word in v:
+                level = k
+        if level == 0:
+            return -4
+        return level
+
+
 def sliding_window(text):
     words = word_tokenize(text)
     improved_window = []
