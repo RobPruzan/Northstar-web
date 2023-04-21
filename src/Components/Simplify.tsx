@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
-import { BsSend } from "react-icons/bs";
+import { BsPlay, BsSend } from "react-icons/bs";
 import { z } from "zod";
 import { word_tokenize } from "./ViewHelpers/TextView";
 import { ApiResponse, ApiResponseSchema } from "lib/merriamUtils";
@@ -9,9 +9,8 @@ type Roles = "user" | "bot";
 
 type Message = {
   role: Roles;
-  createdAt?: string;
+
   text: string;
-  id?: string;
 };
 
 type MedicalWord = {
@@ -24,6 +23,26 @@ interface WordDifficulty {
   word: string;
   difficulty: number;
 }
+
+[[]];
+
+// its an array containing arrays
+
+// The inner array contains a tuple of size 2, call it A
+
+// A has a tuple of size 2, call it B, and a number
+
+// B has a tuple of size 2, call it C, and a number
+
+// C is a tuple of 2 strings
+
+const innerArraySchema = z.union([z.array(z.number()), z.number()]);
+
+const senseSchema = z.array(z.array(z.array(innerArraySchema)));
+
+type Sense = z.infer<typeof senseSchema>;
+
+let l: Sense;
 
 function removeStopWordsAndPunctuation(tokens: string[]): string[] {
   const stopWords = [
@@ -49,6 +68,16 @@ function removeStopWordsAndPunctuation(tokens: string[]): string[] {
     "in",
     "out",
     "up",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
     "down",
     "off",
     "over",
@@ -244,7 +273,9 @@ function removeStopWordsAndPunctuation(tokens: string[]): string[] {
 
   const stopWordsAndPunctuation = tokens.filter((token) => {
     return !(
-      stopWords.includes(token.toLowerCase()) || punctuation.includes(token)
+      stopWords.includes(token.toLowerCase()) ||
+      punctuation.includes(token) ||
+      token.length <= 2
     );
   });
 
@@ -325,8 +356,19 @@ const Simplify = () => {
     },
   });
 
+  const lsatUserMessage = [...messages].find(
+    (message) => message.role === "user"
+  );
+
   const gptMutation = useMutation({
     mutationFn: async (prompt: string) => {
+      const botMessage: Message = {
+        role: "bot",
+        text: "Generating simplification from Language Model",
+      };
+
+      setMessages((messages) => [...messages, botMessage]);
+
       const res = await (
         await fetch(gptUrl, {
           method: "POST",
@@ -336,12 +378,28 @@ const Simplify = () => {
           body: JSON.stringify({ prompt }),
         })
       ).json();
-      return z.string().parse(res);
+      return z
+        .object({
+          response: z.string(),
+        })
+        .parse(res);
+    },
+    onSuccess: (data) => {
+      const newMessage: Message = {
+        role: "bot",
+        text: data.response,
+      };
+      setMessages((messages) => [...messages, newMessage]);
     },
   });
 
   const wordsDifficultyMutation = useMutation({
     mutationFn: async (words: string[]) => {
+      const loadingMessage: Message = {
+        role: "bot",
+        text: "Getting definitions for difficult medical terminology",
+      };
+      setMessages((messages) => [...messages, loadingMessage]);
       const res = await (
         await fetch(wordDifficultyUrl, {
           method: "POST",
@@ -364,7 +422,14 @@ const Simplify = () => {
     onSuccess: (data, ctxParams) => {
       const tokenAmount = ctxParams.length;
 
-      const topDiffWords = getTopNWords(data, Math.ceil(tokenAmount / 10));
+      const topDiffWords = getTopNWords(data, Math.ceil(tokenAmount / 100));
+      const completedMessgage: Message = {
+        role: "bot",
+        text: `Completed getting definitions for difficult medical terminology, found the following words to be difficult: \n${topDiffWords.join(
+          "\n"
+        )}`,
+      };
+      setMessages((messages) => [...messages, completedMessgage]);
 
       // insert @ before the top n words
 
@@ -383,6 +448,12 @@ const Simplify = () => {
       //   definitionMutation.mutate({ word, location: 0 });
       // });
 
+      const message: Message = {
+        role: "bot",
+        text: "Getting definitions for difficult medical terminology",
+      };
+      setMessages((messages) => [...messages, message]);
+
       const medWords: MedicalWord[] = [];
 
       for (const word of words) {
@@ -395,10 +466,17 @@ const Simplify = () => {
       return medWords;
     },
     onSuccess: (data, ctxParams) => {
-      const message = messages[messages.length - 1];
-      console.log("MEDICAL WORDS", medicalWords);
+      const botMessage: Message = {
+        role: "bot",
+        text: `Completed getting definitions for difficult medical terminology, retrieved the following definitions: \n${data
+          .map((d) => d.definitions.join(" | "))
+          .join("\n")}`,
+      };
+
+      setMessages((messages) => [...messages, botMessage]);
+
       // insert @ before each word in message if its one of the medical words
-      const newMessage = message?.text
+      const newMessage = lsatUserMessage?.text
         .split(" ")
         .map((word) => {
           const medWord = medicalWords.current.find(
@@ -419,6 +497,10 @@ const Simplify = () => {
           words: medicalWords.current,
         });
     },
+
+    onError: (error) => {
+      console.log("error getting definitions", error);
+    },
   });
 
   const definitionMutation = useMutation({
@@ -435,7 +517,10 @@ const Simplify = () => {
       const apiRes = res as ApiResponse;
 
       const filteredRes = apiRes.filter(
-        (def) => typeof def === "object" && "shortdef" in def
+        (def) =>
+          typeof def === "object" &&
+          "shortdef" in def &&
+          def.shortdef.length > 0
       );
 
       const definitions = filteredRes.map((def) => def.shortdef[0]);
@@ -455,6 +540,9 @@ const Simplify = () => {
       console.log("la data!", data);
       console.log("Medical words after la data!", medicalWords);
       medicalWords.current = [...medicalWords.current, data];
+    },
+    onError: (error, ctx) => {
+      console.log("error getting definition", error, ctx);
     },
   });
 
@@ -484,6 +572,13 @@ const Simplify = () => {
       context: string;
       words: MedicalWord[];
     }) => {
+      const botMessage: Message = {
+        role: "bot",
+        text: "Validating the definitions for difficult medical terminology (this may take a while)",
+      };
+
+      setMessages((messages) => [...messages, botMessage]);
+
       const res = await (
         await fetch(wordSenseUrl, {
           method: "POST",
@@ -496,8 +591,75 @@ const Simplify = () => {
           }),
         })
       ).json();
-      console.log("the res of word sense", res);
-      return res;
+      console.log(res);
+
+      const pls = res as Sense;
+
+      console.log("FOR THE LOVE OF GOD", pls);
+      // i hate this so much
+      // type FilteredDefinition = {
+      //   word: string;
+      //   definition: string;
+      //   senseScore: number;
+      // };
+      const filteredDefinitionsSchema = z.object({
+        word: z.string(),
+        definition: z.string(),
+        senseScore: z.number(),
+      });
+
+      type FilteredDefinition = z.infer<typeof filteredDefinitionsSchema>;
+      const senseFilteredDefinitions: FilteredDefinition[] = [];
+      const filtered = pls.map((medicalWord) => {
+        console.log("inside the map", medicalWord);
+        const newDefinitions = medicalWord.filter((def) => {
+          console.log("whats beibg compared", def[1], def);
+          const [definition, word] = def[0] as unknown as [string, string];
+          if ((def as [any, number])[1] > 50) {
+            senseFilteredDefinitions.push({
+              word,
+              definition,
+              senseScore: (def as [any, number])[1],
+            });
+            return (def as [any, number])[1] > 50;
+          }
+        });
+        // return z.array(filteredDefinitionsSchema).parse(newDefinitions);
+        return newDefinitions;
+      });
+      console.log("filtered", senseFilteredDefinitions);
+
+      return senseFilteredDefinitions;
+    },
+
+    onSuccess: (data) => {
+      // insert definitions at the locations in the text
+      const botMessage: Message = {
+        role: "bot",
+        text: `Completed validating the definitions for difficult medical terminology, validated the following definitions: \n${data.join(
+          "\n"
+        )}`,
+      };
+
+      setMessages((messages) => [...messages, botMessage]);
+
+      console.log("the message", lsatUserMessage);
+      let newMessage = "";
+      data.map((def) => {
+        lsatUserMessage?.text.split(" ").map((word) => {
+          if (word === def.word) {
+            newMessage += `${word} (${def.definition})`;
+          } else {
+            newMessage += `${word} `;
+          }
+        });
+      });
+
+      const prompt =
+        "Simplify the following medical text to the best of your ability: \n\n" +
+        newMessage;
+      console.log("REQUESTING GPT", prompt);
+      gptMutation.mutate(prompt);
     },
   });
 
@@ -506,12 +668,12 @@ const Simplify = () => {
       // case "Getting definitions for difficult medical terminology":
       //   return {completed: }
 
-      case "Identifying difficult medical terminology":
-        return { goal, completed: wordsDifficultyMutation.isSuccess };
       case "Loading Summarization":
         return { goal, completed: gptMutation.isSuccess };
       case "Validating Summarization":
-        return { goal, completed: difficultyMutation.isSuccess };
+        return { goal, completed: wordsDifficultyMutation.isSuccess };
+      case "Getting definitions for difficult medical terminology":
+        return { goal, completed: definitionMutation.isSuccess };
     }
   });
 
@@ -570,10 +732,7 @@ const Simplify = () => {
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-evenly p-4">
-      <p className="text-4xl font-bold text-white">
-        Medical Document Simplification Pipeline
-      </p>
-      <div className="flex h-[600px] w-5/6 flex-col rounded-lg border border-slate-600 bg-slate-700 px-6 py-2 shadow-lg">
+      <div className="flex h-[600px] w-5/6 flex-col rounded-lg border-2 border-slate-500 bg-slate-700 px-6 py-2 shadow-xl">
         <div
           ref={messageRef}
           className="flex h-5/6 w-full flex-col overflow-y-scroll px-10"
@@ -584,14 +743,14 @@ const Simplify = () => {
                 key={message.text}
                 className="mt-5  mb-10 flex w-full justify-end"
               >
-                <div className="rounded-lg bg-slate-300 p-3 shadow-lg">
+                <div className="max-w-[50%] rounded-lg bg-slate-300 p-3 shadow-lg">
                   {message.text}
                 </div>
               </div>
             ) : (
               <div
-                key={message.id}
-                className="mt-5 ml-7 mb-10 flex w-full justify-start"
+                key={message.text}
+                className="mt-5 ml-7 mb-10 flex w-full max-w-[50%] justify-start"
               >
                 <div className="rounded-lg bg-slate-400 p-3 shadow-lg">
                   {message.text}
@@ -611,6 +770,7 @@ const Simplify = () => {
             }
             className=" h-4/5 w-5/6 rounded-lg bg-slate-900 p-3 text-gray-200 outline-none ring-0 ring-slate-500 focus:ring-1 "
           />
+          {/* {loadingState.map((a) => a?.completed).join("| ")} */}
           <button
             onClick={
               handleStart
@@ -634,7 +794,11 @@ const Simplify = () => {
             }
             className="flex h-4/5 w-20 items-center justify-center rounded-md bg-slate-900 p-2 shadow-lg  transition hover:scale-105"
           >
-            <BsSend size={25} className="fill-white" />
+            {loadingState.every((state) => !state?.completed) ? (
+              <BsSend size={25} className="fill-white" />
+            ) : (
+              <BsPlay className="animate-pulse fill-white" size={50} />
+            )}
           </button>
         </div>
       </div>

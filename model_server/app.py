@@ -6,8 +6,10 @@ import openai
 import functions
 import os
 
+# TOKENIZERS_PARALLELISM=(true | false)
+# TURN OFF PARLLELISM
 
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "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"
 OPEN_AI_ORG_KEY = "org-w3pzkJvfH1OVGYWqigk0JqjE"
 
 openai.organization = OPEN_AI_ORG_KEY
@@ -36,7 +38,7 @@ class GPT(Resource):
             messages=[
                 {
                     "content": prompt,
-                    "role": "You are an expert medical document simplifier",
+                    "role": "assistant",
                 }
             ],
         )
@@ -45,9 +47,12 @@ class GPT(Resource):
 
     def post(self):
         prompt = request.json.get("prompt")
+        print("gpts prompt", prompt)
         if prompt is None:
             return {"error": "No prompt found"}, 400
-        return jsonify({"response", self.query_gpt(prompt)})
+        gpt_res = self.query_gpt(prompt)
+        print("gpts response", gpt_res)
+        return jsonify({"response": gpt_res})
 
 
 class WordSense(Resource):
