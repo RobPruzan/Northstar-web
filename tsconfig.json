@@ -21,8 +21,7 @@
       "~/*": ["./src/*"]
     },
     "noEmitOnError": true,
-    "noFallthroughCasesInSwitch": true,
-    "noPropertyAccessFromIndexSignature": true
+    "noFallthroughCasesInSwitch": true
   },
 
   "include": [

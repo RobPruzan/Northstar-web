@@ -51,22 +51,69 @@ class GPT(Resource):
 
 
 class WordSense(Resource):
+    # TODO need to merge word sense, i have that function somewhere
     # expecting context: tokens, words: ...
     def post(self):
         context, words = request.json.get("context"), request.json.get("words")
-        # a medical word has its word, location and list of possible definitions
+        print("contexgt with @s", context)
+
+        tokenized = functions.tokenizer4.tokenize(context.lower())
+        # find the location of the @ inserted into the text, and replace the @ with empty string
+        # there may be multiple @ in the text, so we need to find all of them
+        locations = []
+        offset = 0
+
+        for idx, i in enumerate(tokenized):
+            if i[0] == "@":
+                print("FOUND A WORD AUOWFH", tokenized[idx + 1])
+                offset += 1
+                locations.append(
+                    {
+                        "location": (idx + 1) - offset,
+                        "word": tokenized[(idx + 1)],
+                    }
+                )
+        print("WHYYY locations", locations)
+        new_words = []
+
+        for i in locations:
+            for j in words:
+                if i["word"] == j["word"]:
+                    new_words.append(
+                        {
+                            "word": i["word"],
+                            "definitions": j["definitions"],
+                            "location": i["location"],
+                        }
+                    )
+
         obj_list = [
             functions.MedicalWord(word["word"], word["definitions"], word["location"])
-            for word in words
+            for word in new_words
+            if word["definitions"] != []
         ]
 
-        validated_definitions = functions.definition_validation(context, obj_list)
+        new_context = ""
+        for letter in context:
+            if letter != "@":
+                new_context += letter
+
+        print("New context:", new_context)
+        # print("New obj list:", obj_list)
+        print()
+        for i in obj_list:
+            print(i.word, i.definitions, i.location)
+        print()
+        validated_definitions = functions.definition_validation(new_context, obj_list)
         return validated_definitions
 
 
 class WordsDifficulty(Resource):
-    def translate(self, x: int):
-        return -(x * 1.786 + 6.4) + 10
+    # def linear_transform(self, x):
+    #     input_range = 3 - (-3)
+    #     output_range = 10 - 0
+    #     transformed_value = (((x - (-3)) * output_range) / input_range) + 0
+    #     return transformed_value
 
     def post(self):
         words: List[int] = request.json.get("words")
@@ -75,8 +122,18 @@ class WordsDifficulty(Resource):
         word_difficulties = []
         for word in words:
             difficulty = functions.get_level(word)
-            word_difficulties.append({"word": word, "difficulty": difficulty})
-        return self.translate(word_difficulties)
+            word_difficulties.append({"word": word, "difficulty": int(difficulty)})
+        return jsonify(word_difficulties)
+
+
+class GetTokens(Resource):
+    def post(self):
+        text = request.json.get("text")
+        if text is None:
+            return {"error": "No text found"}, 400
+        response = functions.tokenizer4(text)
+        print("Tokens:", response)
+        return jsonify(response)
 
 
 class WindowDifficulty(Resource):
@@ -130,6 +187,7 @@ api.add_resource(Stats, "/api/stats")
 api.add_resource(GPT, "/api/gpt")
 api.add_resource(WordsDifficulty, "/api/word_difficulty")
 api.add_resource(WordSense, "/api/word_sense")
+api.add_resource(GetTokens, "/api/get_tokens")
 
 if __name__ == "__main__":
     app.run(debug=True, threaded=False, processes=1)

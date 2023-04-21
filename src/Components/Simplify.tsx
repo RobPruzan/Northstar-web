@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { BsSend } from "react-icons/bs";
 import { z } from "zod";
 import { word_tokenize } from "./ViewHelpers/TextView";
+import { ApiResponse, ApiResponseSchema } from "lib/merriamUtils";
 
 type Roles = "user" | "bot";
 
@@ -15,9 +16,251 @@ type Message = {
 
 type MedicalWord = {
   word: string;
-  location: number;
+
   definitions: string[];
 };
+
+interface WordDifficulty {
+  word: string;
+  difficulty: number;
+}
+
+function removeStopWordsAndPunctuation(tokens: string[]): string[] {
+  const stopWords = [
+    "a",
+    "an",
+    "the",
+    "and",
+    "but",
+    "or",
+    "of",
+    "with",
+    "is",
+    "then",
+    "each",
+    "every",
+    "for",
+    "nor",
+    "on",
+    "at",
+    "to",
+    "from",
+    "by",
+    "in",
+    "out",
+    "up",
+    "down",
+    "off",
+    "over",
+    "under",
+    "be",
+    "am",
+    "is",
+    "are",
+    "was",
+    "were",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "do",
+    "does",
+    "did",
+    "will",
+    "would",
+    "shall",
+    "should",
+    "can",
+    "could",
+    "may",
+    "might",
+    "must",
+    "need",
+    "ought",
+    "dare",
+    "used",
+    "let",
+    "any",
+    "some",
+    "every",
+    "no",
+    "none",
+    "neither",
+    "either",
+    "much",
+    "many",
+    "more",
+    "most",
+    "such",
+    "what",
+    "whatever",
+    "which",
+    "whichever",
+    "who",
+    "whoever",
+    "whom",
+    "whomever",
+    "this",
+    "that",
+    "these",
+    "those",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "same",
+    "other",
+    "another",
+    "suchlike",
+    "so",
+    "as",
+    "like",
+    "unlike",
+    "than",
+    "whether",
+    "although",
+    "though",
+    "even",
+    "if",
+    "unless",
+    "until",
+    "while",
+    "only",
+    "just",
+    "mainly",
+    "mostly",
+    "either",
+    "neither",
+    "both",
+    "and/or",
+    "not",
+    "but",
+    "rather",
+    "instead",
+    "yet",
+    "so",
+    "too",
+    "also",
+    "indeed",
+    "further",
+    "moreover",
+    "besides",
+    "however",
+    "nevertheless",
+    "nonetheless",
+    "therefore",
+    "thus",
+    "hence",
+    "accordingly",
+    "consequently",
+    "otherwise",
+    "meanwhile",
+    "still",
+    "anyway",
+    "anyhow",
+    "anywhere",
+    "everywhere",
+    "somewhere",
+    "nowhere",
+    "here",
+    "there",
+    "why",
+    "when",
+    "where",
+    "how",
+    "what",
+    "who",
+    "which",
+    "whence",
+    "whereby",
+    "wherein",
+    "whereas",
+    "howsoever",
+    "wheresoever",
+    "whensoever",
+    "whatsoever",
+    "whosoever",
+    "whomsoever",
+    "thence",
+    "therefore",
+    "hereby",
+    "herein",
+    "hereto",
+    "hereupon",
+    "forthwith",
+    "hitherto",
+    "thither",
+    "whereupon",
+    "whereunto",
+    "whereafter",
+    "whereby",
+    "wherein",
+    "whereas",
+    "whereof",
+  ];
+
+  const punctuation = [
+    ".",
+    ",",
+    ";",
+    ":",
+    "!",
+    "?",
+    "-",
+    "--",
+    "(",
+    ")",
+    "[",
+    "]",
+    "{",
+    "}",
+    "'",
+    '"',
+    "/",
+    "\\",
+    "@",
+    "#",
+    "$",
+    "%",
+    "^",
+    "&",
+    "*",
+    "_",
+    "+",
+    "=",
+    "`",
+    "~",
+    "<",
+    ">",
+    "|",
+  ];
+
+  const stopWordsAndPunctuation = tokens.filter((token) => {
+    return !(
+      stopWords.includes(token.toLowerCase()) || punctuation.includes(token)
+    );
+  });
+
+  return stopWordsAndPunctuation;
+}
+
+function getTopNWords(words: WordDifficulty[], n: number): string[] {
+  // Sort the list of words by difficulty score in descending order
+  const sortedWords = words.sort((a, b) => b.difficulty - a.difficulty);
+
+  // Take the first N words from the sorted list
+  const topNWords = sortedWords.slice(0, n);
+
+  // Return an array of the top N words
+  return topNWords.map((word) => word.word);
+}
 
 const DEFAULT_MESSAGE: Message = {
   role: "user",
@@ -56,11 +299,13 @@ const difficultyUrl = `${baseUrl}/difficulty`;
 const gptUrl = `${baseUrl}/gpt`;
 const wordDifficultyUrl = `${baseUrl}/word_difficulty`;
 const wordSenseUrl = `${baseUrl}/word_sense`;
+const getTokensUrl = `${baseUrl}/get_tokens`;
 
 const Simplify = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const messageRef = useRef<HTMLDivElement>(null);
-  const [medicalWords, setMedicalWords] = useState<MedicalWord[]>([]);
+  const medicalWords = useRef<MedicalWord[]>([]);
+
   const [currentUserMessage, setCurrentUserMessage] =
     useState<Message>(DEFAULT_MESSAGE);
 
@@ -106,6 +351,7 @@ const Simplify = () => {
           body: JSON.stringify({ words }),
         })
       ).json();
+      console.log("the res of diff words", res);
       return z
         .array(
           z.object({
@@ -115,87 +361,144 @@ const Simplify = () => {
         )
         .parse(res);
     },
+    onSuccess: (data, ctxParams) => {
+      const tokenAmount = ctxParams.length;
+
+      const topDiffWords = getTopNWords(data, Math.ceil(tokenAmount / 10));
+
+      // insert @ before the top n words
+
+      // partialMedWords.forEach(({ location, word }) => {
+      //   definitionMutation.mutate({ word, location });
+      // });
+      definitionsMutation.mutate(topDiffWords);
+    },
+  });
+
+  // mutation of mutations for getting definitions given array of words
+
+  const definitionsMutation = useMutation({
+    mutationFn: async (words: string[]) => {
+      // words.forEach((word) => {
+      //   definitionMutation.mutate({ word, location: 0 });
+      // });
+
+      const medWords: MedicalWord[] = [];
+
+      for (const word of words) {
+        const defMutationRes = await definitionMutation.mutateAsync({
+          word,
+        });
+        medWords.push(defMutationRes);
+      }
+
+      return medWords;
+    },
+    onSuccess: (data, ctxParams) => {
+      const message = messages[messages.length - 1];
+      console.log("MEDICAL WORDS", medicalWords);
+      // insert @ before each word in message if its one of the medical words
+      const newMessage = message?.text
+        .split(" ")
+        .map((word) => {
+          const medWord = medicalWords.current.find(
+            (medWord) => medWord.word.toLowerCase() === word.toLowerCase()
+          );
+          if (medWord) {
+            return `@${word}`;
+          }
+          return word;
+        })
+        .join(" ");
+
+      console.log("new message being sent out", newMessage);
+
+      newMessage &&
+        wordSenseMutation.mutate({
+          context: newMessage,
+          words: medicalWords.current,
+        });
+    },
   });
 
   const definitionMutation = useMutation({
-    mutationFn: async ({
-      word,
-      location,
-    }: {
-      word: string;
-      location: number;
-    }) => {
+    mutationFn: async ({ word }: { word: string }) => {
       const res = await (
         await fetch(getMerriamUrl(word), {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ word }),
         })
       ).json();
       // definitely the wrong type
       // return z.string().parse(res);
+      console.log("logging res", res, word);
+      const apiRes = res as ApiResponse;
+
+      const filteredRes = apiRes.filter(
+        (def) => typeof def === "object" && "shortdef" in def
+      );
+
+      const definitions = filteredRes.map((def) => def.shortdef[0]);
+      console.log("merriam api response", apiRes);
       return z
         .object({
           word: z.string(),
           definitions: z.array(z.string()),
-          location: z.number(),
         })
         .parse({
           word,
-          location,
-          definitions: res,
+
+          definitions: definitions,
         });
     },
     onSuccess: (data) => {
-      setMedicalWords((prev) => [...prev, data]);
+      console.log("la data!", data);
+      console.log("Medical words after la data!", medicalWords);
+      medicalWords.current = [...medicalWords.current, data];
     },
   });
 
-  const dummyData = {
-    context:
-      "what a wonderful day today is. I will play so much baseball which is an awesome sport",
-    words: [
-      // word: string;
-      // location: number;
-      // definitions: string[];
-      {
-        word: "baseball",
-        location: 12,
-        definitions: [
-          "Baseball is a sport played with a rubber/leather ball, a bat, and a glove, and is very popular in america",
-        ],
-      },
-    ],
-  };
+  // const dummyData = {
+  //   context:
+  //     "what a wonderful day today is. I will play so much baseball which is an awesome sport, which i will play with my friends. It's a very fun and happy sport",
+  //   words: [
+  //     // word: string;
+  //     // location: number;
+  //     // definitions: string[];
+  //     {
+  //       word: "baseball",
+  //       location: 12,
+  //       definitions: [
+  //         "to be inlove with an alien species. It has been outlawed since the 1950s, and is punishable by death. It is an act of hatred",
+  //         "A sport you play with a bat, gloves and a ball",
+  //       ],
+  //     },
+  //   ],
+  // };
 
   const wordSenseMutation = useMutation({
-    mutationFn: async () =>
-      //   {
-      //   context,
-
-      //   words,
-      // }: {
-      //   context: string[];
-
-      //   words: MedicalWord[];
-      //     }
-
-      {
-        const res = await (
-          await fetch(wordSenseUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              context: dummyData.context,
-              words: dummyData.words,
-            }),
-          })
-        ).json();
-      },
+    mutationFn: async ({
+      context,
+      words,
+    }: {
+      context: string;
+      words: MedicalWord[];
+    }) => {
+      const res = await (
+        await fetch(wordSenseUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            context,
+            words,
+          }),
+        })
+      ).json();
+      console.log("the res of word sense", res);
+      return res;
+    },
   });
 
   const loadingState = calculationTasks.map(({ completed, goal }) => {
@@ -212,24 +515,47 @@ const Simplify = () => {
     }
   });
 
-  const pipeline = () => undefined;
-
-  const getDefinitions = (difficultWords: any[]) => [];
-
-  const enhanceDocument = (definitions: any[]) => "";
-
-  const handleStart = async () => {
+  const handleStart = () => {
     currentUserMessage && setMessages((prev) => [...prev, currentUserMessage]);
-    const difficultWords = await wordsDifficultyMutation.mutateAsync(
-      word_tokenize(currentUserMessage.text)
-    );
 
-    const definitions = getDefinitions(difficultWords);
-    const enhancedDocument = enhanceDocument(difficultWords);
-    const gptRes = await gptMutation.mutateAsync(enhancedDocument);
+    // getTokensMutation.mutate(currentUserMessage.text);
+    wordsDifficultyMutation.mutate(
+      removeStopWordsAndPunctuation(
+        word_tokenize(currentUserMessage.text).map((token) =>
+          token.trim().toLowerCase()
+        )
+      )
+    );
 
     setCurrentUserMessage(DEFAULT_MESSAGE);
   };
+
+  // const getTokensMutation = useMutation({
+  //   mutationFn: async (text: string) => {
+  //     const res = await (
+  //       await fetch(getTokensUrl, {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           text,
+  //         }),
+  //       })
+  //     ).json();
+
+  //     console.log("res ahh", res);
+
+  //     return z.array(z.string()).parse(res);
+  //   },
+  //   onSuccess: (data) => {
+  //     wordsDifficultyMutation.mutate(
+  //       removeStopWordsAndPunctuation(
+  //         data.map((token) => token.trim().toLowerCase())
+  //       )
+  //     );
+  //   },
+  // });
 
   useEffect(() => {
     if (messageRef.current) {
@@ -255,7 +581,7 @@ const Simplify = () => {
           {messages.map((message) =>
             message.role === "user" ? (
               <div
-                key={message.id}
+                key={message.text}
                 className="mt-5  mb-10 flex w-full justify-end"
               >
                 <div className="rounded-lg bg-slate-300 p-3 shadow-lg">
@@ -286,9 +612,26 @@ const Simplify = () => {
             className=" h-4/5 w-5/6 rounded-lg bg-slate-900 p-3 text-gray-200 outline-none ring-0 ring-slate-500 focus:ring-1 "
           />
           <button
-            onClick={() => {
-              wordSenseMutation.mutate();
-            }}
+            onClick={
+              handleStart
+              // () =>
+              // void (async () => {
+              //   // wordSenseMutation.mutate();
+              //   // definitionMutation.mutate({
+              //   //   word: "headache",
+              //   //   location: 12,
+              //   // });
+              //   const res = await wordsDifficultyMutation.mutateAsync([
+              //     "headache",
+              //     "baseball",
+              //     "hello",
+              //     "science",
+              //   ]);
+
+              //   console.log("diff words", res);
+              //   console.log("func", getTopNWords(res, 2));
+              // })()
+            }
             className="flex h-4/5 w-20 items-center justify-center rounded-md bg-slate-900 p-2 shadow-lg  transition hover:scale-105"
           >
             <BsSend size={25} className="fill-white" />

@@ -532,6 +532,9 @@ class MedicalWord:
         self.definitions = definitions
         self.location = location
 
+    def __str__(self):
+        return f"word: {self.word}, definitions amount: {len(self.definitions)}, location: {self.location}"
+
 
 def construct_context_gloss_pairs(context, word: MedicalWord):
     target_start_id = word.location
@@ -688,8 +691,8 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
 def infer(context, word: MedicalWord, args):
     target_start_id = word.location
     target_end_id = word.location + 1
-    context = " ".join(context)
-    print("context that's being tokenziesdf sojfads", context)
+
+    # print("context that's being tokenziesdf sojfads", context)
     # need to start sending with @ to identify the word, need to use this tokenizer can't tokenize on the frontend
     sent = tokenizer4.tokenize(context)
     assert (
@@ -735,7 +738,6 @@ def infer(context, word: MedicalWord, args):
 def definition_validation(context: str, words: List[MedicalWord]) -> List:
     # definitions will be an an
 
-    tokens = tokenizer4.tokenize(context)
-    result = [infer(tokens, word, args) for word in words]
+    result = [infer(context, word, args) for word in words]
     print("result from definition validation", result)
     return result
