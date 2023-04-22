@@ -18,11 +18,11 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="bg-slate-800 ">
-        <div className="h-screen w-screen bg-slate-800">
-          <main className="bg-slate-900 ">
+        <div className="h-screen w-screen">
+          <main className="fancy-content bg-slate-900 ">
             <div className="mx-auto flex h-screen  flex-col p-8">
-              <div className="m-24 h-2/5 w-2/5">
-                <h1 className="bg-gradient-to-r from-slate-700 via-blue-900 to-slate-600 bg-clip-text text-8xl font-extrabold text-transparent">
+              <div className="m-24 h-2/5 w-3/5">
+                <h1 className="bg-gradient-to-r from-slate-700 via-blue-900 to-slate-600 bg-clip-text text-9xl font-extrabold text-transparent">
                   Northstar
                 </h1>
                 <p className="mb-4 text-lg text-gray-300">

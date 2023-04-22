@@ -12,7 +12,7 @@ export const word_tokenize = (text: string | undefined) => {
   const tokens = [];
   for (const char of text) {
     if (char in puncs || char === " ") {
-      tokens.push(temp_token);
+      tokens.push(temp_token.trim());
       temp_token = "";
     }
     temp_token += char;

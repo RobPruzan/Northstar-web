@@ -333,12 +333,26 @@ const wordSenseUrl = `${baseUrl}/word_sense`;
 const getTokensUrl = `${baseUrl}/get_tokens`;
 
 const Simplify = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "bot",
+      text: "Please enter a medical document you would like to be simplified",
+    },
+  ]);
+  const [prompt, setPrompt] = useState(
+    "Simplify the following medical text to the best of your ability:\n\n"
+  );
+
   const messageRef = useRef<HTMLDivElement>(null);
   const medicalWords = useRef<MedicalWord[]>([]);
+  const difficultyRetries = useRef(0);
+  const [topWords, setTopWords] = useState("0.02");
+  const definitionsRetrieved = useRef(new Set<string>());
 
   const [currentUserMessage, setCurrentUserMessage] =
     useState<Message>(DEFAULT_MESSAGE);
+
+  const [threshold, setThreshold] = useState(6.5);
 
   const difficultyMutation = useMutation({
     mutationFn: async (text: string) => {
@@ -352,15 +366,57 @@ const Simplify = () => {
         })
       ).json();
 
-      return z.number().parse(res);
+      const difficultyResponse = z
+        .object({
+          difficulty: z.number(),
+        })
+        .parse(res);
+
+      if (
+        difficultyResponse.difficulty > threshold &&
+        difficultyRetries.current < 3
+      ) {
+        await Promise.reject({
+          error: "Document is too difficult",
+          difficulty: difficultyResponse,
+          text,
+        });
+      }
+
+      return z
+        .object({
+          difficulty: z.number(),
+          gptOutput: z.string(),
+        })
+        .parse({
+          difficulty: difficultyResponse.difficulty,
+          gptOutput: text,
+        });
+    },
+    onError: (error, ctx) => {
+      console.log("got too high of a difficulty, got:", error);
+      llmMutation.mutate(ctx);
+      difficultyRetries.current++;
+    },
+    onSuccess: (data) => {
+      console.log(
+        "evaluated difficulty, got valid difficulty of:",
+        data.difficulty
+      );
+      const newMessage: Message = {
+        role: "bot",
+        text: data.gptOutput,
+      };
+
+      setMessages((messages) => [...messages, newMessage]);
     },
   });
 
-  const lsatUserMessage = [...messages].find(
+  const lastUserMessage = [...messages].find(
     (message) => message.role === "user"
   );
 
-  const gptMutation = useMutation({
+  const llmMutation = useMutation({
     mutationFn: async (prompt: string) => {
       const botMessage: Message = {
         role: "bot",
@@ -385,19 +441,16 @@ const Simplify = () => {
         .parse(res);
     },
     onSuccess: (data) => {
-      const newMessage: Message = {
-        role: "bot",
-        text: data.response,
-      };
-      setMessages((messages) => [...messages, newMessage]);
+      console.log("Recieving llm response, evaluating difficulty", data);
+      difficultyMutation.mutate(data.response);
     },
   });
 
-  const wordsDifficultyMutation = useMutation({
+  const baseWordDifficultyMutation = useMutation({
     mutationFn: async (words: string[]) => {
       const loadingMessage: Message = {
         role: "bot",
-        text: "Getting definitions for difficult medical terminology",
+        text: "Finding difficult words in the given document",
       };
       setMessages((messages) => [...messages, loadingMessage]);
       const res = await (
@@ -406,10 +459,42 @@ const Simplify = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ words }),
+          body: JSON.stringify({
+            words: words.filter((word) => !word.includes("\n")),
+          }),
         })
       ).json();
-      console.log("the res of diff words", res);
+
+      return z
+        .array(
+          z.object({
+            word: z.string(),
+            difficulty: z.number(),
+          })
+        )
+        .parse(res);
+    },
+  });
+
+  const wordsDifficultyMutation = useMutation({
+    mutationFn: async (words: string[]) => {
+      const loadingMessage: Message = {
+        role: "bot",
+        text: "Finding difficult words in the given document",
+      };
+      setMessages((messages) => [...messages, loadingMessage]);
+      const res = await (
+        await fetch(wordDifficultyUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            words: words.filter((word) => !word.includes("\n")),
+          }),
+        })
+      ).json();
+
       return z
         .array(
           z.object({
@@ -420,9 +505,13 @@ const Simplify = () => {
         .parse(res);
     },
     onSuccess: (data, ctxParams) => {
+      console.log("retrieved difficult words", data);
       const tokenAmount = ctxParams.length;
 
-      const topDiffWords = getTopNWords(data, Math.ceil(tokenAmount / 100));
+      const topDiffWords = getTopNWords(
+        data,
+        Math.ceil(tokenAmount * parseFloat(topWords))
+      );
       const completedMessgage: Message = {
         role: "bot",
         text: `Completed getting definitions for difficult medical terminology, found the following words to be difficult: \n${topDiffWords.join(
@@ -439,8 +528,138 @@ const Simplify = () => {
       definitionsMutation.mutate(topDiffWords);
     },
   });
-
+  type DefinitionWord = {
+    word: string;
+    definition: string;
+    senseScore: number;
+  };
   // mutation of mutations for getting definitions given array of words
+  // this function recursively looks if theres any difficult words in word definitions, and if there is, we insert the definition into the array of words to be looked up
+  const recursiveDefinitionSimplificationMutation = useMutation({
+    //   // we will be given medical words and the validated definition, and we need to return the medical words with the definition recursively inserted into the definition array
+
+    mutationFn: async (params: { data: DefinitionWord[]; retrys: number }) => {
+      const { data, retrys } = params;
+
+      const botMessage: Message = {
+        role: "bot",
+        text: "Simplifying definitions recursively",
+      };
+      setMessages((messages) => [...messages, botMessage]);
+      const newWordData: DefinitionWord[] = [];
+      let hasAddedNewToken = false;
+
+      for (const wordData of data) {
+        const { word, definition, senseScore } = wordData;
+        const definitionTokens = definition.split(" ");
+
+        const newTokens: string[] = [];
+        const diffArr = await baseWordDifficultyMutation.mutateAsync(
+          removeStopWordsAndPunctuation(definitionTokens)
+        );
+
+        const diffTopWords = getTopNWords(diffArr, Math.ceil(1));
+        console.log("TOKENS OF A DEFINITION", definitionTokens);
+        for (const word of definitionTokens) {
+          if (diffTopWords.includes(word)) {
+            const insertToken = await baseDefinitionMutation.mutateAsync({
+              word,
+            });
+            if (!insertToken) {
+              newTokens.push(word);
+              continue;
+            }
+
+            const newDefinition = definition
+              .split(" ")
+              .map((w) => {
+                const medWord = w.toLowerCase().includes(word.toLowerCase());
+
+                if (medWord) {
+                  return `@${w}`;
+                } else {
+                  return w;
+                }
+              })
+              .join(" ");
+
+            const validated = await baseWordSenseMutation.mutateAsync({
+              words: [insertToken],
+              context: newDefinition,
+            });
+
+            const takenDefinition = validated.find(
+              (word) => word.senseScore > 25
+            );
+            newTokens.push(word);
+            if (takenDefinition) {
+              newTokens.push("(");
+              newTokens.push(takenDefinition.definition);
+              newTokens.push(")");
+              hasAddedNewToken = true;
+            }
+          } else {
+            newTokens.push(word);
+          }
+        }
+        console.log("TOKENS AFTER ITERAWTING OVER BASE TOKENS", newTokens);
+
+        newWordData.push({
+          definition: newTokens.join(" "),
+          senseScore,
+          word,
+        });
+      }
+
+      if (hasAddedNewToken && retrys < 3) {
+        console.log("RUNNING THE RECURSSIVE THINGY", newWordData),
+          "should be retry",
+          retrys;
+        await recursiveDefinitionSimplificationMutation.mutateAsync({
+          data: newWordData,
+          retrys: retrys + 1,
+        });
+      }
+      return newWordData;
+    },
+    onSuccess: (data) => {
+      console.log("recursive definition simplification", data);
+    },
+
+    // def recursive_definition(wordData, retrys=0):
+    // new_word_data = []
+    // has_added_new_token = False
+    // for wordData in data:
+    //   word = wordData["word"]
+    //   definition = wordData["definition"]
+    //   senseScore = wordData["senseScore"]
+
+    //   definition_tokens = word_tokenize(definition)
+    //   new_tokens = []
+    //   for word in definition_tokens:
+    //     diff = difficulty(word)
+    //     if diff > 7:
+    //       insert_token = get_definition(word)
+    //       new_tokens.append("(")
+    //       new_tokens.append(insert_token)
+    //       new_tokens.append(")")
+    //       has_added_new_token = True
+    //     else:
+    //       new_tokens.append(word)
+    //   new_word_data.append(
+    //           {
+    //       "word":word,
+    //       "definition": ' '.join(new_tokens),
+    //       "senseScore": senseScore
+    //   }
+    //   )
+    // if has_added_new_token or retrys > 5:
+
+    //   print(new_word_data)
+    //   recursive_definition(new_word_data, retrys + 1)
+    // else:
+    //   return new_word_data
+  });
 
   const definitionsMutation = useMutation({
     mutationFn: async (words: string[]) => {
@@ -457,15 +676,22 @@ const Simplify = () => {
       const medWords: MedicalWord[] = [];
 
       for (const word of words) {
+        if (definitionsRetrieved.current.has(word)) {
+          continue;
+        }
         const defMutationRes = await definitionMutation.mutateAsync({
           word,
         });
-        medWords.push(defMutationRes);
+        defMutationRes && medWords.push(defMutationRes);
       }
 
       return medWords;
     },
     onSuccess: (data, ctxParams) => {
+      ctxParams.forEach((word) => {
+        definitionsRetrieved.current.add(word);
+      });
+      console.log("Got definitions for difficult words", data);
       const botMessage: Message = {
         role: "bot",
         text: `Completed getting definitions for difficult medical terminology, retrieved the following definitions: \n${data
@@ -476,7 +702,7 @@ const Simplify = () => {
       setMessages((messages) => [...messages, botMessage]);
 
       // insert @ before each word in message if its one of the medical words
-      const newMessage = lsatUserMessage?.text
+      const newMessage = lastUserMessage?.text
         .split(" ")
         .map((word) => {
           const medWord = medicalWords.current.find(
@@ -484,12 +710,11 @@ const Simplify = () => {
           );
           if (medWord) {
             return `@${word}`;
+          } else {
+            return word;
           }
-          return word;
         })
         .join(" ");
-
-      console.log("new message being sent out", newMessage);
 
       newMessage &&
         wordSenseMutation.mutate({
@@ -503,17 +728,18 @@ const Simplify = () => {
     },
   });
 
-  const definitionMutation = useMutation({
+  const baseDefinitionMutation = useMutation({
     mutationFn: async ({ word }: { word: string }) => {
+      if (definitionsRetrieved.current.has(word)) {
+        return;
+      }
       const res = await (
         await fetch(getMerriamUrl(word), {
           method: "POST",
           body: JSON.stringify({ word }),
         })
       ).json();
-      // definitely the wrong type
-      // return z.string().parse(res);
-      console.log("logging res", res, word);
+
       const apiRes = res as ApiResponse;
 
       const filteredRes = apiRes.filter(
@@ -524,7 +750,7 @@ const Simplify = () => {
       );
 
       const definitions = filteredRes.map((def) => def.shortdef[0]);
-      console.log("merriam api response", apiRes);
+
       return z
         .object({
           word: z.string(),
@@ -536,33 +762,126 @@ const Simplify = () => {
           definitions: definitions,
         });
     },
-    onSuccess: (data) => {
-      console.log("la data!", data);
-      console.log("Medical words after la data!", medicalWords);
+    onSuccess: (data, ctx) => {
+      definitionsRetrieved.current.add(ctx.word);
+    },
+  });
+
+  const definitionMutation = useMutation({
+    mutationFn: async ({ word }: { word: string }) => {
+      if (definitionsRetrieved.current.has(word)) {
+        return;
+      }
+      const res = await (
+        await fetch(getMerriamUrl(word), {
+          method: "POST",
+          body: JSON.stringify({ word }),
+        })
+      ).json();
+
+      const apiRes = res as ApiResponse;
+
+      const filteredRes = apiRes.filter(
+        (def) =>
+          typeof def === "object" &&
+          "shortdef" in def &&
+          def.shortdef.length > 0
+      );
+
+      const definitions = filteredRes.map((def) => def.shortdef[0]);
+
+      return z
+        .object({
+          word: z.string(),
+          definitions: z.array(z.string()),
+        })
+        .parse({
+          word,
+
+          definitions: definitions,
+        });
+    },
+    onSuccess: (data, ctx) => {
+      if (!data) {
+        return;
+      }
       medicalWords.current = [...medicalWords.current, data];
+      definitionsRetrieved.current.add(ctx.word);
     },
     onError: (error, ctx) => {
       console.log("error getting definition", error, ctx);
     },
   });
+  // TODO copy pasta code get rid of this
+  const baseWordSenseMutation = useMutation({
+    mutationFn: async ({
+      context,
+      words,
+    }: {
+      context: string;
+      words: MedicalWord[];
+    }) => {
+      const botMessage: Message = {
+        role: "bot",
+        text: "Validating the definitions for difficult medical terminology (this may take a while)",
+      };
 
-  // const dummyData = {
-  //   context:
-  //     "what a wonderful day today is. I will play so much baseball which is an awesome sport, which i will play with my friends. It's a very fun and happy sport",
-  //   words: [
-  //     // word: string;
-  //     // location: number;
-  //     // definitions: string[];
-  //     {
-  //       word: "baseball",
-  //       location: 12,
-  //       definitions: [
-  //         "to be inlove with an alien species. It has been outlawed since the 1950s, and is punishable by death. It is an act of hatred",
-  //         "A sport you play with a bat, gloves and a ball",
-  //       ],
-  //     },
-  //   ],
-  // };
+      setMessages((messages) => [...messages, botMessage]);
+
+      const res = await (
+        await fetch(wordSenseUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            context,
+            words,
+          }),
+        })
+      ).json();
+
+      const pls = res as Sense;
+
+      console.log("actual response from wordsense endpoiint ", pls);
+
+      const filteredDefinitionsSchema = z.object({
+        word: z.string(),
+        definition: z.string(),
+        senseScore: z.number(),
+      });
+
+      type FilteredDefinition = z.infer<typeof filteredDefinitionsSchema>;
+      const senseFilteredDefinitions: FilteredDefinition[] = [];
+
+      pls.forEach((medicalWord) => {
+        const newDefinitions = medicalWord.filter((def) => {
+          const [definition, word] = def[0] as unknown as [string, string];
+          if ((def as [unknown, number])[1] > 50) {
+            senseFilteredDefinitions.push({
+              word: word.trim(),
+              definition,
+              senseScore: (def as [unknown, number])[1],
+            });
+            return (def as [unknown, number])[1] > 50;
+          }
+        });
+
+        return newDefinitions;
+      });
+      senseFilteredDefinitions.sort((a, b) => b.senseScore - a.senseScore);
+
+      const wordsWithDefinitions = new Set();
+
+      return senseFilteredDefinitions.filter((def) => {
+        if (wordsWithDefinitions.has(def.word.trim())) {
+          return false;
+        }
+        wordsWithDefinitions.add(def.word.trim());
+        return true;
+      });
+    },
+  });
 
   const wordSenseMutation = useMutation({
     mutationFn: async ({
@@ -591,17 +910,9 @@ const Simplify = () => {
           }),
         })
       ).json();
-      console.log(res);
 
       const pls = res as Sense;
 
-      console.log("FOR THE LOVE OF GOD", pls);
-      // i hate this so much
-      // type FilteredDefinition = {
-      //   word: string;
-      //   definition: string;
-      //   senseScore: number;
-      // };
       const filteredDefinitionsSchema = z.object({
         word: z.string(),
         definition: z.string(),
@@ -610,56 +921,75 @@ const Simplify = () => {
 
       type FilteredDefinition = z.infer<typeof filteredDefinitionsSchema>;
       const senseFilteredDefinitions: FilteredDefinition[] = [];
-      const filtered = pls.map((medicalWord) => {
-        console.log("inside the map", medicalWord);
+
+      pls.forEach((medicalWord) => {
         const newDefinitions = medicalWord.filter((def) => {
-          console.log("whats beibg compared", def[1], def);
           const [definition, word] = def[0] as unknown as [string, string];
-          if ((def as [any, number])[1] > 50) {
+          if ((def as [unknown, number])[1] > 50) {
             senseFilteredDefinitions.push({
-              word,
+              word: word.trim(),
               definition,
-              senseScore: (def as [any, number])[1],
+              senseScore: (def as [unknown, number])[1],
             });
-            return (def as [any, number])[1] > 50;
+            return (def as [unknown, number])[1] > 50;
           }
         });
-        // return z.array(filteredDefinitionsSchema).parse(newDefinitions);
+
         return newDefinitions;
       });
-      console.log("filtered", senseFilteredDefinitions);
+      senseFilteredDefinitions.sort((a, b) => b.senseScore - a.senseScore);
 
-      return senseFilteredDefinitions;
+      const wordsWithDefinitions = new Set();
+
+      return senseFilteredDefinitions.filter((def) => {
+        if (wordsWithDefinitions.has(def.word.trim())) {
+          return false;
+        }
+        wordsWithDefinitions.add(def.word.trim());
+        return true;
+      });
     },
 
-    onSuccess: (data) => {
-      // insert definitions at the locations in the text
+    onSuccess: async (data) => {
+      console.log("validated definitions left over:", data);
+      const betterDefinitions =
+        await recursiveDefinitionSimplificationMutation.mutateAsync({
+          data,
+          retrys: 0,
+        });
+
       const botMessage: Message = {
         role: "bot",
-        text: `Completed validating the definitions for difficult medical terminology, validated the following definitions: \n${data.join(
+        text: `Completed validating the definitions for difficult medical terminology, validated the following definitions: \n${betterDefinitions.join(
           "\n"
         )}`,
       };
 
       setMessages((messages) => [...messages, botMessage]);
 
-      console.log("the message", lsatUserMessage);
       let newMessage = "";
-      data.map((def) => {
-        lsatUserMessage?.text.split(" ").map((word) => {
-          if (word === def.word) {
-            newMessage += `${word} (${def.definition})`;
-          } else {
-            newMessage += `${word} `;
-          }
-        });
+      console.log("better definitions from recursivness", betterDefinitions);
+      console.log(
+        "last user message which we will insert definitions into",
+        lastUserMessage
+      );
+      lastUserMessage?.text.split(" ").map((word) => {
+        const found = betterDefinitions.find((d) =>
+          word.trim().toLowerCase().includes(d.word.toLowerCase().trim())
+        );
+        if (found) {
+          newMessage += `${word} (${found.definition}) `;
+        } else {
+          newMessage += `${word} `;
+        }
       });
+      // });
 
-      const prompt =
-        "Simplify the following medical text to the best of your ability: \n\n" +
-        newMessage;
-      console.log("REQUESTING GPT", prompt);
-      gptMutation.mutate(prompt);
+      const fullPrompt = prompt + newMessage;
+
+      console.log("Prompt going to the llm", fullPrompt);
+
+      llmMutation.mutate(fullPrompt);
     },
   });
 
@@ -669,7 +999,7 @@ const Simplify = () => {
       //   return {completed: }
 
       case "Loading Summarization":
-        return { goal, completed: gptMutation.isSuccess };
+        return { goal, completed: llmMutation.isSuccess };
       case "Validating Summarization":
         return { goal, completed: wordsDifficultyMutation.isSuccess };
       case "Getting definitions for difficult medical terminology":
@@ -678,9 +1008,10 @@ const Simplify = () => {
   });
 
   const handleStart = () => {
+    console.log("starting");
     currentUserMessage && setMessages((prev) => [...prev, currentUserMessage]);
 
-    // getTokensMutation.mutate(currentUserMessage.text);
+    console.log("Extracting difficulty words", currentUserMessage.text);
     wordsDifficultyMutation.mutate(
       removeStopWordsAndPunctuation(
         word_tokenize(currentUserMessage.text).map((token) =>
@@ -691,33 +1022,6 @@ const Simplify = () => {
 
     setCurrentUserMessage(DEFAULT_MESSAGE);
   };
-
-  // const getTokensMutation = useMutation({
-  //   mutationFn: async (text: string) => {
-  //     const res = await (
-  //       await fetch(getTokensUrl, {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           text,
-  //         }),
-  //       })
-  //     ).json();
-
-  //     console.log("res ahh", res);
-
-  //     return z.array(z.string()).parse(res);
-  //   },
-  //   onSuccess: (data) => {
-  //     wordsDifficultyMutation.mutate(
-  //       removeStopWordsAndPunctuation(
-  //         data.map((token) => token.trim().toLowerCase())
-  //       )
-  //     );
-  //   },
-  // });
 
   useEffect(() => {
     if (messageRef.current) {
@@ -731,11 +1035,11 @@ const Simplify = () => {
   }, [messages, setMessages]);
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-evenly p-4">
-      <div className="flex h-[600px] w-5/6 flex-col rounded-lg border-2 border-slate-500 bg-slate-700 px-6 py-2 shadow-xl">
+    <div className="fancy-content  flex h-full w-screen  items-center justify-evenly bg-zinc-900 p-4 opacity-70">
+      <div className="  bg-blur flex h-[800px] w-4/6 flex-col items-center justify-evenly rounded-lg rounded-b-none shadow-2xl">
         <div
           ref={messageRef}
-          className="flex h-5/6 w-full flex-col overflow-y-scroll px-10"
+          className="fancy-content flex h-full w-full flex-col overflow-y-scroll rounded-sm rounded-b-none border-2 border-slate-700 bg-zinc-900 px-4 "
         >
           {messages.map((message) =>
             message.role === "user" ? (
@@ -743,7 +1047,7 @@ const Simplify = () => {
                 key={message.text}
                 className="mt-5  mb-10 flex w-full justify-end"
               >
-                <div className="max-w-[50%] rounded-lg bg-slate-300 p-3 shadow-lg">
+                <div className="max-w-[50%] rounded-lg bg-sky-400 bg-opacity-60 p-3 font-medium text-gray-100 shadow-lg">
                   {message.text}
                 </div>
               </div>
@@ -752,14 +1056,14 @@ const Simplify = () => {
                 key={message.text}
                 className="mt-5 ml-7 mb-10 flex w-full max-w-[50%] justify-start"
               >
-                <div className="rounded-lg bg-slate-400 p-3 shadow-lg">
+                <div className="rounded-lg bg-slate-700 bg-opacity-60 p-3 font-medium text-gray-100 shadow-lg">
                   {message.text}
                 </div>
               </div>
             )
           )}
         </div>
-        <div className="flex h-1/6 w-full justify-evenly">
+        <div className="flex h-20 w-full items-center justify-around rounded-b-md border-x-2 border-b-2  border-slate-700 bg-zinc-800 bg-opacity-5 bg-gradient-to-b p-3 px-16">
           <textarea
             value={currentUserMessage?.text}
             onChange={(e) =>
@@ -768,31 +1072,11 @@ const Simplify = () => {
                 text: e.target.value,
               }))
             }
-            className=" h-4/5 w-5/6 rounded-lg bg-slate-900 p-3 text-gray-200 outline-none ring-0 ring-slate-500 focus:ring-1 "
+            className=" h-full w-5/6 rounded-lg border-2 border-slate-500 bg-slate-900 bg-opacity-40 p-3 text-gray-200 outline-none ring-0 "
           />
-          {/* {loadingState.map((a) => a?.completed).join("| ")} */}
           <button
-            onClick={
-              handleStart
-              // () =>
-              // void (async () => {
-              //   // wordSenseMutation.mutate();
-              //   // definitionMutation.mutate({
-              //   //   word: "headache",
-              //   //   location: 12,
-              //   // });
-              //   const res = await wordsDifficultyMutation.mutateAsync([
-              //     "headache",
-              //     "baseball",
-              //     "hello",
-              //     "science",
-              //   ]);
-
-              //   console.log("diff words", res);
-              //   console.log("func", getTopNWords(res, 2));
-              // })()
-            }
-            className="flex h-4/5 w-20 items-center justify-center rounded-md bg-slate-900 p-2 shadow-lg  transition hover:scale-105"
+            onClick={handleStart}
+            className="b flex h-full w-20 items-center justify-center rounded-md border-2 border-slate-500 bg-slate-900 bg-opacity-40 p-2 shadow-lg  transition hover:scale-105"
           >
             {loadingState.every((state) => !state?.completed) ? (
               <BsSend size={25} className="fill-white" />
@@ -802,8 +1086,39 @@ const Simplify = () => {
           </button>
         </div>
       </div>
+      <div className="flex h-[800px] w-1/6 flex-col items-center rounded-sm border-2 border-slate-700 bg-zinc-900 p-4 shadow-lg">
+        <select
+          defaultValue={"GPT-3.5-Turbo"}
+          className="w-full rounded-md bg-slate-700 bg-opacity-50 p-3 text-gray-100 shadow-md outline-none ring-0"
+        >
+          <option>GPT-3.5-turbo</option>
+          <option>Chat-Doctor</option>
+          <option>Flan-T5</option>
+        </select>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          className="mt-4 h-2/5 w-full rounded-md bg-slate-700 bg-opacity-50 p-3 text-gray-100 shadow-md outline-none ring-0"
+        />
+        <input
+          value={topWords}
+          onChange={(e) => setTopWords(e.target.value)}
+          className="mt-4  w-full rounded-md bg-slate-700 bg-opacity-50 p-3 text-gray-100 shadow-md outline-none ring-0"
+        />
+      </div>
     </div>
   );
 };
 
 export default Simplify;
+
+type DefinitionProps = {
+  definitions: {
+    word: string;
+    definition: string;
+  };
+};
+
+const DefinitionMessage = ({ definitions }: DefinitionProps) => {
+  return <div>definitions!</div>;
+};

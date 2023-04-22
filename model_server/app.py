@@ -9,7 +9,7 @@ import os
 # TOKENIZERS_PARALLELISM=(true | false)
 # TURN OFF PARLLELISM
 
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "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"
 OPEN_AI_ORG_KEY = "org-w3pzkJvfH1OVGYWqigk0JqjE"
 
 openai.organization = OPEN_AI_ORG_KEY
@@ -23,11 +23,21 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 class Difficulty(Resource):
+    def linear_transform(self, number):
+        old_min = -3
+        old_max = 3
+        new_min = 10
+        new_max = 0
+        new_value = ((number - old_min) / (old_max - old_min)) * (
+            new_max - new_min
+        ) + new_min
+        return new_value
+
     def post(self):
         text = request.json.get("text")
         if text is None:
             return {"error": "No text found"}, 400
-        response = {"difficulty": functions.reading_difficulty(text)}
+        response = {"difficulty": self.linear_transform(functions.better_predict(text))}
         return jsonify(response)
 
 
@@ -47,30 +57,25 @@ class GPT(Resource):
 
     def post(self):
         prompt = request.json.get("prompt")
-        print("gpts prompt", prompt)
+        # print("gpts prompt", prompt)
         if prompt is None:
             return {"error": "No prompt found"}, 400
         gpt_res = self.query_gpt(prompt)
-        print("gpts response", gpt_res)
+        # print("gpts response", gpt_res)
         return jsonify({"response": gpt_res})
 
 
 class WordSense(Resource):
-    # TODO need to merge word sense, i have that function somewhere
-    # expecting context: tokens, words: ...
     def post(self):
         context, words = request.json.get("context"), request.json.get("words")
-        print("contexgt with @s", context)
+        print("THE CONTEXT IS", context)
 
         tokenized = functions.tokenizer4.tokenize(context.lower())
-        # find the location of the @ inserted into the text, and replace the @ with empty string
-        # there may be multiple @ in the text, so we need to find all of them
         locations = []
         offset = 0
 
         for idx, i in enumerate(tokenized):
             if i[0] == "@":
-                print("FOUND A WORD AUOWFH", tokenized[idx + 1])
                 offset += 1
                 locations.append(
                     {
@@ -78,12 +83,12 @@ class WordSense(Resource):
                         "word": tokenized[(idx + 1)],
                     }
                 )
-        print("WHYYY locations", locations)
-        new_words = []
 
+        new_words = []
+        print("locations god damnit", locations)
         for i in locations:
             for j in words:
-                if i["word"] == j["word"]:
+                if j["word"].lower().find(i["word"].lower()) != -1:
                     new_words.append(
                         {
                             "word": i["word"],
@@ -102,14 +107,10 @@ class WordSense(Resource):
         for letter in context:
             if letter != "@":
                 new_context += letter
+        print("new context", context)
 
-        print("New context:", new_context)
-        # print("New obj list:", obj_list)
-        print()
-        for i in obj_list:
-            print(i.word, i.definitions, i.location)
-        print()
         validated_definitions = functions.definition_validation(new_context, obj_list)
+        print("The validated definitions", validated_definitions)
         return validated_definitions
 
 
@@ -119,6 +120,15 @@ class WordsDifficulty(Resource):
     #     output_range = 10 - 0
     #     transformed_value = (((x - (-3)) * output_range) / input_range) + 0
     #     return transformed_value
+    def linear_transform(self, number):
+        old_min = -3
+        old_max = 3
+        new_min = 10
+        new_max = 0
+        new_value = ((number - old_min) / (old_max - old_min)) * (
+            new_max - new_min
+        ) + new_min
+        return new_value
 
     def post(self):
         words: List[int] = request.json.get("words")
@@ -126,8 +136,10 @@ class WordsDifficulty(Resource):
             return {"error": "No word found"}, 400
         word_difficulties = []
         for word in words:
-            difficulty = functions.get_level(word)
-            word_difficulties.append({"word": word, "difficulty": int(difficulty)})
+            difficulty = functions.better_predict(word)
+            word_difficulties.append(
+                {"word": word, "difficulty": self.linear_transform(float(difficulty))}
+            )
         return jsonify(word_difficulties)
 
 

@@ -739,5 +739,5 @@ def definition_validation(context: str, words: List[MedicalWord]) -> List:
     # definitions will be an an
 
     result = [infer(context, word, args) for word in words]
-    print("result from definition validation", result)
+    print("result from definition validation", result, context)
     return result
