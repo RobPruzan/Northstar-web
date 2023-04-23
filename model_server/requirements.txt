@@ -21,3 +21,4 @@ sentence_transformers
 umap-learn
 flask-restful
 openai
+flask_cors

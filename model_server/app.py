@@ -61,7 +61,7 @@ class GPT(Resource):
         if prompt is None:
             return {"error": "No prompt found"}, 400
         gpt_res = self.query_gpt(prompt)
-        # print("gpts response", gpt_res)
+        # print("gpts response", gpt_res)cd m
         return jsonify({"response": gpt_res})
 
 
@@ -69,6 +69,12 @@ class WordSense(Resource):
     def post(self):
         context, words = request.json.get("context"), request.json.get("words")
         print("THE CONTEXT IS", context)
+
+        def get_actual_word(subword):
+            actual_tokens = context.split(" ")
+            for token in actual_tokens:
+                if subword in token and "@" in token:
+                    return token
 
         tokenized = functions.tokenizer4.tokenize(context.lower())
         locations = []
@@ -91,7 +97,7 @@ class WordSense(Resource):
                 if j["word"].lower().find(i["word"].lower()) != -1:
                     new_words.append(
                         {
-                            "word": i["word"],
+                            "word": get_actual_word(i["word"]),
                             "definitions": j["definitions"],
                             "location": i["location"],
                         }
@@ -102,6 +108,10 @@ class WordSense(Resource):
             for word in new_words
             if word["definitions"] != []
         ]
+        print(
+            "THE OBJECT LIST THIS IS WHAT IS OF MOST IMPORTANCE",
+            [(i.word, i.definitions) for i in obj_list],
+        )
 
         new_context = ""
         for letter in context:

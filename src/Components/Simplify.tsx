@@ -43,6 +43,51 @@ const senseSchema = z.array(z.array(z.array(innerArraySchema)));
 type Sense = z.infer<typeof senseSchema>;
 
 let l: Sense;
+const punctuation = [
+  ".",
+  ",",
+  ";",
+
+  "!",
+  "?",
+  "-",
+  "--",
+  "(",
+  ")",
+  "[",
+  "]",
+  "{",
+  "}",
+  "'",
+  '"',
+  "/",
+  "\\",
+  "@",
+  "#",
+  "$",
+  "%",
+  "^",
+  "&",
+
+  "_",
+  "+",
+  "=",
+  "`",
+  "~",
+  "<",
+  ">",
+  "|",
+];
+
+const removePunctuation = (text: string) => {
+  let newText = "";
+  for (const char of text) {
+    if (!punctuation.includes(char)) {
+      newText += char;
+    }
+  }
+  return newText;
+};
 
 function removeStopWordsAndPunctuation(tokens: string[]): string[] {
   const stopWords = [
@@ -235,42 +280,6 @@ function removeStopWordsAndPunctuation(tokens: string[]): string[] {
     "whereof",
   ];
 
-  const punctuation = [
-    ".",
-    ",",
-    ";",
-    ":",
-    "!",
-    "?",
-    "-",
-    "--",
-    "(",
-    ")",
-    "[",
-    "]",
-    "{",
-    "}",
-    "'",
-    '"',
-    "/",
-    "\\",
-    "@",
-    "#",
-    "$",
-    "%",
-    "^",
-    "&",
-    "*",
-    "_",
-    "+",
-    "=",
-    "`",
-    "~",
-    "<",
-    ">",
-    "|",
-  ];
-
   const stopWordsAndPunctuation = tokens.filter((token) => {
     return !(
       stopWords.includes(token.toLowerCase()) ||
@@ -323,7 +332,7 @@ const MERRIAM_WEBSTER_API_KEY = z
 export function getMerriamUrl(searchTerm: string) {
   return `https://www.dictionaryapi.com/api/v3/references/medical/json/${searchTerm}?key=${MERRIAM_WEBSTER_API_KEY}`;
 }
-
+const defaultTaskMessage = "Not Started";
 const baseUrl = z.string().parse(process.env["NEXT_PUBLIC_MODEL_ENDPOINT_URL"]);
 
 const difficultyUrl = `${baseUrl}/difficulty`;
@@ -340,19 +349,19 @@ const Simplify = () => {
     },
   ]);
   const [prompt, setPrompt] = useState(
-    "Simplify the following medical text to the best of your ability:\n\n"
+    "Simplify the following medical text to the best of your ability, but do not leave out critical information:\n\n"
   );
 
   const messageRef = useRef<HTMLDivElement>(null);
   const medicalWords = useRef<MedicalWord[]>([]);
   const difficultyRetries = useRef(0);
-  const [topWords, setTopWords] = useState("0.02");
+  const [topWords, setTopWords] = useState("0.05");
   const definitionsRetrieved = useRef(new Set<string>());
 
   const [currentUserMessage, setCurrentUserMessage] =
     useState<Message>(DEFAULT_MESSAGE);
-
-  const [threshold, setThreshold] = useState(6.5);
+  const [threshold, setThreshold] = useState("6.5");
+  const [currentTaskState, setCurrentTaskState] = useState(defaultTaskMessage);
 
   const difficultyMutation = useMutation({
     mutationFn: async (text: string) => {
@@ -373,7 +382,7 @@ const Simplify = () => {
         .parse(res);
 
       if (
-        difficultyResponse.difficulty > threshold &&
+        difficultyResponse.difficulty > parseFloat(threshold) &&
         difficultyRetries.current < 3
       ) {
         await Promise.reject({
@@ -407,7 +416,7 @@ const Simplify = () => {
         role: "bot",
         text: data.gptOutput,
       };
-
+      setCurrentTaskState(defaultTaskMessage);
       setMessages((messages) => [...messages, newMessage]);
     },
   });
@@ -423,7 +432,7 @@ const Simplify = () => {
         text: "Generating simplification from Language Model",
       };
 
-      setMessages((messages) => [...messages, botMessage]);
+      // setMessages((messages) => [...messages, botMessage]);
 
       const res = await (
         await fetch(gptUrl, {
@@ -441,18 +450,19 @@ const Simplify = () => {
         .parse(res);
     },
     onSuccess: (data) => {
-      console.log("Recieving llm response, evaluating difficulty", data);
+      console.log("Receiving llm response, evaluating difficulty", data);
+      setCurrentTaskState("Evaluating Difficulty of simplification");
       difficultyMutation.mutate(data.response);
     },
   });
 
   const baseWordDifficultyMutation = useMutation({
     mutationFn: async (words: string[]) => {
-      const loadingMessage: Message = {
-        role: "bot",
-        text: "Finding difficult words in the given document",
-      };
-      setMessages((messages) => [...messages, loadingMessage]);
+      // const loadingMessage: Message = {
+      //   role: "bot",
+      //   text: "Finding difficult words in the given document",
+      // };
+      // setMessages((messages) => [...messages, loadingMessage]);
       const res = await (
         await fetch(wordDifficultyUrl, {
           method: "POST",
@@ -478,11 +488,11 @@ const Simplify = () => {
 
   const wordsDifficultyMutation = useMutation({
     mutationFn: async (words: string[]) => {
-      const loadingMessage: Message = {
-        role: "bot",
-        text: "Finding difficult words in the given document",
-      };
-      setMessages((messages) => [...messages, loadingMessage]);
+      // const loadingMessage: Message = {
+      //   role: "bot",
+      //   text: "Finding difficult words in the given document",
+      // };
+      // setMessages((messages) => [...messages, loadingMessage]);
       const res = await (
         await fetch(wordDifficultyUrl, {
           method: "POST",
@@ -512,11 +522,14 @@ const Simplify = () => {
         data,
         Math.ceil(tokenAmount * parseFloat(topWords))
       );
+
+      const uniqueDiffWords = [...new Set(topDiffWords)];
       const completedMessgage: Message = {
         role: "bot",
-        text: `Completed getting definitions for difficult medical terminology, found the following words to be difficult: \n${topDiffWords.join(
-          "\n"
-        )}`,
+        // text: `Completed getting definitions for difficult medical terminology, found the following words to be difficult: \n${topDiffWords.join(
+        //   "\n"
+        // )}`,
+        text: removePunctuation(uniqueDiffWords.join("***")),
       };
       setMessages((messages) => [...messages, completedMessgage]);
 
@@ -525,7 +538,8 @@ const Simplify = () => {
       // partialMedWords.forEach(({ location, word }) => {
       //   definitionMutation.mutate({ word, location });
       // });
-      definitionsMutation.mutate(topDiffWords);
+      setCurrentTaskState("Getting definitions for difficult words");
+      definitionsMutation.mutate(uniqueDiffWords);
     },
   });
   type DefinitionWord = {
@@ -540,12 +554,32 @@ const Simplify = () => {
 
     mutationFn: async (params: { data: DefinitionWord[]; retrys: number }) => {
       const { data, retrys } = params;
+      // const botMessage: Message = {
+      //   role: "bot",
+      //   // text: `Completed validating the definitions for difficult medical terminology, validated the following definitions: \n${betterDefinitions.join(
+      //   //   "\n"
+      //   // )}`,
+      //   text: removePunctuation(
+      //     data
+      //       .map(
+      //         (d) =>
+      //           `${
+      //             lastUserMessage?.text
+      //               .split(" ")
+      //               .find((l) => l.includes(d.word)) ?? d.word
+      //           }: ${d.definition}`
+      //       )
+      //       .join("***")
+      //   ),
+      // };
 
-      const botMessage: Message = {
-        role: "bot",
-        text: "Simplifying definitions recursively",
-      };
-      setMessages((messages) => [...messages, botMessage]);
+      // setMessages((messages) => [...messages, botMessage]);
+
+      // const botMessage: Message = {
+      //   role: "bot",
+      //   text: "Simplifying definitions recursively",
+      // };
+      // setMessages((messages) => [...messages, botMessage]);
       const newWordData: DefinitionWord[] = [];
       let hasAddedNewToken = false;
 
@@ -569,13 +603,14 @@ const Simplify = () => {
               newTokens.push(word);
               continue;
             }
-
+            const explainedWords = new Set<string>();
             const newDefinition = definition
               .split(" ")
               .map((w) => {
                 const medWord = w.toLowerCase().includes(word.toLowerCase());
 
-                if (medWord) {
+                if (medWord && !explainedWords.has(w)) {
+                  explainedWords.add(w);
                   return `@${w}`;
                 } else {
                   return w;
@@ -615,6 +650,7 @@ const Simplify = () => {
         console.log("RUNNING THE RECURSSIVE THINGY", newWordData),
           "should be retry",
           retrys;
+        setCurrentTaskState("Simplifying definitions recursively");
         await recursiveDefinitionSimplificationMutation.mutateAsync({
           data: newWordData,
           retrys: retrys + 1,
@@ -623,42 +659,22 @@ const Simplify = () => {
       return newWordData;
     },
     onSuccess: (data) => {
+      // const formattedDefinitions = data
+      //   .map((d) => {
+      //     const entry = `${d.word}: ${d.definition}`;
+      //     return entry;
+      //   })
+      //   .join("***");
+      // setMessages((messages) => [
+      //   ...messages,
+      //   {
+      //     role: "bot",
+      //     text: formattedDefinitions,
+      //   },
+      // ]);
+
       console.log("recursive definition simplification", data);
     },
-
-    // def recursive_definition(wordData, retrys=0):
-    // new_word_data = []
-    // has_added_new_token = False
-    // for wordData in data:
-    //   word = wordData["word"]
-    //   definition = wordData["definition"]
-    //   senseScore = wordData["senseScore"]
-
-    //   definition_tokens = word_tokenize(definition)
-    //   new_tokens = []
-    //   for word in definition_tokens:
-    //     diff = difficulty(word)
-    //     if diff > 7:
-    //       insert_token = get_definition(word)
-    //       new_tokens.append("(")
-    //       new_tokens.append(insert_token)
-    //       new_tokens.append(")")
-    //       has_added_new_token = True
-    //     else:
-    //       new_tokens.append(word)
-    //   new_word_data.append(
-    //           {
-    //       "word":word,
-    //       "definition": ' '.join(new_tokens),
-    //       "senseScore": senseScore
-    //   }
-    //   )
-    // if has_added_new_token or retrys > 5:
-
-    //   print(new_word_data)
-    //   recursive_definition(new_word_data, retrys + 1)
-    // else:
-    //   return new_word_data
   });
 
   const definitionsMutation = useMutation({
@@ -667,11 +683,11 @@ const Simplify = () => {
       //   definitionMutation.mutate({ word, location: 0 });
       // });
 
-      const message: Message = {
-        role: "bot",
-        text: "Getting definitions for difficult medical terminology",
-      };
-      setMessages((messages) => [...messages, message]);
+      // const message: Message = {
+      //   role: "bot",
+      //   text: "Getting definitions for difficult medical terminology",
+      // };
+      // setMessages((messages) => [...messages, message]);
 
       const medWords: MedicalWord[] = [];
 
@@ -692,14 +708,24 @@ const Simplify = () => {
         definitionsRetrieved.current.add(word);
       });
       console.log("Got definitions for difficult words", data);
+      console.log(
+        "The text mapped to the definition",
+        removePunctuation(
+          data.map((d) => `${d.word}: ${d.definitions.join("***")}`).join("***")
+        )
+      );
       const botMessage: Message = {
         role: "bot",
-        text: `Completed getting definitions for difficult medical terminology, retrieved the following definitions: \n${data
-          .map((d) => d.definitions.join(" | "))
-          .join("\n")}`,
+        // text: `Completed getting definitions for difficult medical terminology, retrieved the following definitions: \n${data
+        //   .map((d) => d.definitions.join(" | "))
+        //   .join("\n")}`,
+        text: removePunctuation(
+          data.map((d) => `${d.word}: ${d.definitions.join("***")}`).join("***")
+        ),
       };
 
       setMessages((messages) => [...messages, botMessage]);
+      const explainedWords = new Set<string>();
 
       // insert @ before each word in message if its one of the medical words
       const newMessage = lastUserMessage?.text
@@ -708,14 +734,15 @@ const Simplify = () => {
           const medWord = medicalWords.current.find(
             (medWord) => medWord.word.toLowerCase() === word.toLowerCase()
           );
-          if (medWord) {
+          if (medWord && !explainedWords.has(medWord.word)) {
+            explainedWords.add(medWord.word);
             return `@${word}`;
           } else {
             return word;
           }
         })
         .join(" ");
-
+      setCurrentTaskState("Validating the retrieved definitions");
       newMessage &&
         wordSenseMutation.mutate({
           context: newMessage,
@@ -821,12 +848,12 @@ const Simplify = () => {
       context: string;
       words: MedicalWord[];
     }) => {
-      const botMessage: Message = {
-        role: "bot",
-        text: "Validating the definitions for difficult medical terminology (this may take a while)",
-      };
+      // const botMessage: Message = {
+      //   role: "bot",
+      //   text: "Validating the definitions for difficult medical terminology (this may take a while)",
+      // };
 
-      setMessages((messages) => [...messages, botMessage]);
+      // setMessages((messages) => [...messages, botMessage]);
 
       const res = await (
         await fetch(wordSenseUrl, {
@@ -891,12 +918,12 @@ const Simplify = () => {
       context: string;
       words: MedicalWord[];
     }) => {
-      const botMessage: Message = {
-        role: "bot",
-        text: "Validating the definitions for difficult medical terminology (this may take a while)",
-      };
+      // const botMessage: Message = {
+      //   role: "bot",
+      //   text: "Validating the definitions for difficult medical terminology (this may take a while)",
+      // };
 
-      setMessages((messages) => [...messages, botMessage]);
+      // setMessages((messages) => [...messages, botMessage]);
 
       const res = await (
         await fetch(wordSenseUrl, {
@@ -960,9 +987,23 @@ const Simplify = () => {
 
       const botMessage: Message = {
         role: "bot",
-        text: `Completed validating the definitions for difficult medical terminology, validated the following definitions: \n${betterDefinitions.join(
-          "\n"
-        )}`,
+        // text: `Completed validating the definitions for difficult medical terminology, validated the following definitions: \n${betterDefinitions.join(
+        //   "\n"
+        // )}`,
+        text:
+          "Validated definitions: " +
+          removePunctuation(
+            betterDefinitions
+              .map(
+                (d) =>
+                  `${
+                    lastUserMessage?.text
+                      .split(" ")
+                      .find((l) => l.includes(d.word)) ?? d.word
+                  }: ${d.definition}`
+              )
+              .join("***")
+          ),
       };
 
       setMessages((messages) => [...messages, botMessage]);
@@ -988,27 +1029,26 @@ const Simplify = () => {
       const fullPrompt = prompt + newMessage;
 
       console.log("Prompt going to the llm", fullPrompt);
-
+      setCurrentTaskState("Inserting definitions, and simplifying");
+      setMessages((prev) => [...prev, { role: "bot", text: fullPrompt }]);
       llmMutation.mutate(fullPrompt);
     },
   });
 
-  const loadingState = calculationTasks.map(({ completed, goal }) => {
-    switch (goal) {
-      // case "Getting definitions for difficult medical terminology":
-      //   return {completed: }
-
-      case "Loading Summarization":
-        return { goal, completed: llmMutation.isSuccess };
-      case "Validating Summarization":
-        return { goal, completed: wordsDifficultyMutation.isSuccess };
-      case "Getting definitions for difficult medical terminology":
-        return { goal, completed: definitionMutation.isSuccess };
-    }
-  });
+  // const loadingState = calculationTasks.map(({ completed, goal }) => {
+  //   switch (goal) {
+  //     case "Loading Summarization":
+  //       return { goal, completed: llmMutation.isSuccess };
+  //     case "Validating Summarization":
+  //       return { goal, completed: wordsDifficultyMutation.isSuccess };
+  //     case "Getting definitions for difficult medical terminology":
+  //       return { goal, completed: definitionMutation.isSuccess };
+  //   }
+  // });
 
   const handleStart = () => {
     console.log("starting");
+    setCurrentTaskState("Calculating difficulty of each word");
     currentUserMessage && setMessages((prev) => [...prev, currentUserMessage]);
 
     console.log("Extracting difficulty words", currentUserMessage.text);
@@ -1057,7 +1097,8 @@ const Simplify = () => {
                 className="mt-5 ml-7 mb-10 flex w-full max-w-[50%] justify-start"
               >
                 <div className="rounded-lg bg-slate-700 bg-opacity-60 p-3 font-medium text-gray-100 shadow-lg">
-                  {message.text}
+                  {/* {message.text} */}
+                  <Visualize data={message.text.split("***")} />
                 </div>
               </div>
             )
@@ -1078,11 +1119,12 @@ const Simplify = () => {
             onClick={handleStart}
             className="b flex h-full w-20 items-center justify-center rounded-md border-2 border-slate-500 bg-slate-900 bg-opacity-40 p-2 shadow-lg  transition hover:scale-105"
           >
-            {loadingState.every((state) => !state?.completed) ? (
-              <BsSend size={25} className="fill-white" />
-            ) : (
-              <BsPlay className="animate-pulse fill-white" size={50} />
-            )}
+            <BsPlay
+              className={`${
+                currentTaskState !== defaultTaskMessage ? "animate-pulse" : ""
+              } fill-white`}
+              size={40}
+            />
           </button>
         </div>
       </div>
@@ -1100,11 +1142,46 @@ const Simplify = () => {
           onChange={(e) => setPrompt(e.target.value)}
           className="mt-4 h-2/5 w-full rounded-md bg-slate-700 bg-opacity-50 p-3 text-gray-100 shadow-md outline-none ring-0"
         />
-        <input
-          value={topWords}
-          onChange={(e) => setTopWords(e.target.value)}
-          className="mt-4  w-full rounded-md bg-slate-700 bg-opacity-50 p-3 text-gray-100 shadow-md outline-none ring-0"
-        />
+        <div className="my-4 flex w-full">
+          <label className="font-bold text-gray-100">n% difficult words</label>
+          <input
+            value={topWords}
+            onChange={(e) => setTopWords(e.target.value)}
+            className="mt-4  w-full rounded-md bg-slate-700 bg-opacity-50 p-3 text-gray-100 shadow-md outline-none ring-0"
+          />
+        </div>
+        <div className="my-4 flex w-full">
+          <label className="font-bold text-gray-100">
+            Difficulty threshold [0, 10] range
+          </label>
+          <input
+            value={threshold}
+            onChange={(e) => setThreshold(e.target.value)}
+            className="mt-4  w-full rounded-md bg-slate-700 bg-opacity-50 p-3 text-gray-100 shadow-md outline-none ring-0"
+          />
+        </div>
+
+        <div className="mt-4 flex w-full items-center justify-evenly rounded-md bg-slate-700 p-4 text-sm font-semibold text-gray-100 shadow-lg">
+          {currentTaskState}
+          {currentTaskState !== defaultTaskMessage && (
+            <svg
+              aria-hidden="true"
+              className="mr-2 h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1113,12 +1190,21 @@ const Simplify = () => {
 export default Simplify;
 
 type DefinitionProps = {
-  definitions: {
-    word: string;
-    definition: string;
-  };
+  data: string[];
 };
 
-const DefinitionMessage = ({ definitions }: DefinitionProps) => {
-  return <div>definitions!</div>;
+const Visualize = ({ data }: DefinitionProps) => {
+  return (
+    // unordered list of data
+    <ul className="flex flex-col items-center justify-start">
+      {data.map((d, index) => (
+        <li
+          key={index}
+          className="my-5 flex w-full flex-col items-start justify-center"
+        >
+          <p className="float-left text-gray-200">{d.trim()}</p>
+        </li>
+      ))}
+    </ul>
+  );
 };
